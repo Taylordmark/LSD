@@ -17,6 +17,8 @@ Save files to C:/LSD/...
 1. Open Source Files/Application.cpp
 2. Start without debugging with play button OR (Ctrl+F5)
 
+Updated version of app is available as an .exe file after running at ""C:\LSD\SurveyApp\main\win32_directx12\Debug\win32_directx12.exe""
+
 ## About the app
 
 - **Home Page**
