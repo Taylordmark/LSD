@@ -22,13 +22,13 @@ Save files to C:/LSD/...
 **Home Page**
   Navigate to different functional pages
 **Create Surveys**
-  Currently pulls data from "C:\LSD\AppFiles\SurveyQuestionsDemo.csv"
-  Users can edit survey questions, response types
-  Submittal creates folder in Test Program folder with all survey data
+  Currently pulls data from "C:\LSD\AppFiles\SurveyQuestionsDemo.csv"\n
+  Users can edit survey questions, response types\n
+  Submittal creates folder in Test Program folder with all survey data\n
 **Complete Surveys**
-  Pulls survey from associated test program folder
-  Displays survey
-  Submittal creates completed survey file
+  Pulls survey from associated test program folder\n
+  Displays survey\n
+  Submittal creates completed survey file\n
 **Analyze Surveys**
   Shows survey completion breakdown
   
@@ -36,11 +36,11 @@ Save files to C:/LSD/...
 
 
 To Do:
-  **Create Surveys** data pull must use a file selector, not default location
-  **Create surveys** submittal should make corresponding subfolder in Responses
-  Add metadata filters to **Analyze Surveys** (cockpit position etc)
-  Add sentiment analysis of surveys using hugging face pretrained model to **Analyze Surveys**
-  Make app look nicer with better fonts, color themes
-  Add data connection to Envision to get flight data for **Complete Surveys** page
+  - **Create Surveys** data pull must use a file selector, not default location\n
+  - **Create surveys** submittal should make corresponding subfolder in Responses\n
+  - Add metadata filters to **Analyze Surveys** (cockpit position etc)\n
+  - Add sentiment analysis of surveys using hugging face pretrained model to **Analyze Surveys**\n
+  - Make app look nicer with better fonts, color themes
+  - Add data connection to Envision to get flight data for **Complete Surveys** page
   
   
