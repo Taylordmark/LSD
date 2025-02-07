@@ -1,0 +1,136 @@
+PATY Transcription
+
+Pre-UI
+·       183 - Set up packages, AWS cred, etc
+·   	211 - Initialize survey form is commented out
+    o   Get number of surveys from number of rows
+·        248 – Initialize test point tracker commented out
+    o   Pulls from ‘test points to survey’ document
+·       358 - Initialize Form Input Types
+    o   Create inputs from the survey excel files
+    o   Set parameters for: Checkboxes, 5 pt radio btns, 7 point radio btns, generic radio btns, 7 point sldr btns, 20 pt sldr btns, date input, large textbox, time
+UI
+·       Login Page
+·       Create Program
+    o   Set up a new test program using an existing account, selecting your name froma dropdown
+    o   Create account button
+·       Configure Program Details
+    o   Loads after submitting for new program
+    o   Set details for: Long program name, short name, password, password match
+    o   Submit button
+·       Upload test point matrix
+    o   Loads after hitting submit
+    o   Provie sample test point matrix for download
+    o   Allow editing of the matrix
+    o   Submit Button
+·       Assign Crew Roles to Seating Positions
+    o   Add all possible seating positions and crew roles that your survey takers will assume, click assign to assign the pair
+    o   Show table that updates after user inputs
+    o   Add position after dropdown input choices:
+        §  ("Front", "Back", "UTD", "OFT", "WST", "PTT", "Left Seat", "Right Seat", "Jump Seat", "ARO")
+    o   Add role after dropdown input from choices:
+        §  ("Pilot", "WSO", "CSO", "ARO", "Pilot Receiving Instruction", "Pilot Giving Instruction", "Driver", "Passenger")
+    o   Assign position / role pair
+    o   Will this program distribute surveys based on role or position? (Usually it’s role)
+    o   Complete step 3 button
+·       Review available surveys
+    o   "If you have any survey/questionaire formats that aren't in the list, please add them. You will be able configure the actual survey questions once you're logged into your test program."),
+    o   Dropdown for selecting surveys and buttons for viewing and adding surveys.
+    o   Completion button to finalize this step in the process.
+·       Assign Measures to Surveys
+    o   ‘Assign surveys to the test programs MOPs/MOSs
+    o   Program assign measures table
+    o   “Measure” eg MOP02
+    o   “Measure Topic” e.g. VoiceCommunications
+    o   “Survey” – from choices
+    o   “Description” – eg. Voice Communications System User Experience”
+    o   “Add” Button
+    o   “Complete Button
+·       Review Test Point Matrix with Surveys
+    o   “The survey to test point mapping is completely random. This can be changed later on”
+    o   DataTable – create program assign measure to TPM table
+    o   ‘Complete” button
+·       Create Program Button
+    o   Maybe add some review or overview type data here before submission
+765
+Program Dashboard
+·   View program status and data top-down
+·   Test events remaining
+·   Num test events over time
+896
+Mission Management
+·   “Edit existing missions or create new missions”
+·   Box – title = “Existing Missions”
+    o   Choose mission type – effectiveness or suitability
+    o   Prepped mission table
+    o   Mission selected tracker
+    o   Delete mission, new mission buttons
+    o   New maintenance mission button
+    o   Mark complete mission button – checkmark
+934
+Debrief / Collect Surveys
+·       “Optional Test Surveys”
+·       “General Information” – Aircrew Data Box – “Select the mission to debrief then fill out the fields below
+·       “Mission” – choices = fill in, Go to Survey Tracker Button, Focus Position, Your Position, Mission Date, Engineer
+·       Next Button
+·       Skip to Surveys Button
+·       Mission Data – “Please input you mission information. The engineer will answer any questions”
+·       Data: Takeoff time, Landing time, timezone (local, zulu), Line Number, MSN Status ("", "Effective/Complete", "Effective/Incomplete", "Ineffective/Complete", "Ineffective/Incomplete"), Reason Code ("", "NA", "Ops", "Weather", "Mx", "Other"),
+·       Previous Button, Next Button
+·       Test Events Attempted – Table, Add / remove,
+·       Previous Button, Next Button
+·       Training Objective Completion – Dynamic Status Table, Previous, Next
+·       Take Surveys –
+o   Previous,
+o   “The surveys on the next page are short, so please take your time to read and answer the questions thoroughly. Your input is valuable for improving this program”
+o   TableOutput Survey
+o   “Never submit PII or information above CUI through this app
+1088
+Data Collection Sheet
+·       Job Control Number textinput
+·       Data collection sheet table
+·       Text Input Fields – Start time, Stop time, Objective, Observer notes
+·       Enter button, Save Button
+Maintenance Survey Collection – “Maintenance Test Surveys”
+·       General Information – Job Control Number input
+·       Job Information
+o   Job date, start time, stop time
+o   event type ("Maintenance", "Inspection", "Servicing"), weather ("Clear", "Scattered", "Broken", "Overcast"), location textinput, time of day ("Day", "Night", "Twilight")
+o   TO change (Y/N), FSR? (y/n), DR? (y/n), DR number textinput
+o   WUC textinput, Fault Code textinput, SE Req textinput, Crew Size textinput
+o   Facility? (y/n), Crew Function textinput, Part Number textinput, Doc Number textinput
+1141
+Take Maintenance Surveys
+·       Previous,
+·       “The surveys on the next page are short, so please take your time to read and answer the questions thoroughly. Your input is valuable for improving this program”
+·       Choose a survey dropdown
+·       TableOutput Survey
+·       “Never submit PII or information above CUI through this app
+Survey Management
+·       “Validate, Verify, and Adjudicate Submitted Surveys”
+·       Survey Feed By User Table
+·       View submission button
+·       Help Button
+1190
+Data Analysis
+·       View and Export Data
+·       Opens PATY Dash
+1482
+Design of Experiments Stuff
+·       Power Curve Generator
+1546
+Option to print out paper surveys
+Useful Links
+1611
+Manage Programs
+·       Manage Users – edit permissions, edit user type, save button (dropdowns for types and perms?)
+·       Users table
+1640
+Manage Surveys – add edit or remove surveys from table with save button
+·       Question, Question ID, Input type (MC, txt, chk, instructions), Question options (separated by comma ex. Disagree, neutral, agree, required (t/f)
+1812
+Update Test point Matrix
+·       View or update the Test Point Matrix
+·       Download Option
+Tons of functions
+
