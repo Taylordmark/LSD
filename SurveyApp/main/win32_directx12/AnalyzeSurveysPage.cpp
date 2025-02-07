@@ -20,9 +20,9 @@ namespace fs = std::filesystem;
 
 
 
-static std::string responsesPath = "C:/AppFilesJSON/Responses";
-static std::string responseTypesPath = "C:/AppFilesJSON/responsetypes.json";
-static std::string testProgramsPath = "C:/AppFilesJSON/TestPrograms";
+static std::string responsesPath = "C:/LSD/AppFiles/Responses";
+static std::string responseTypesPath = "C:/LSD/AppFiles/responsetypes.json";
+static std::string testProgramsPath = "C:/LSD/AppFiles/TestPrograms";
 
 // Data to show correct survey
 static int selectedTestProgramIndex = 0;

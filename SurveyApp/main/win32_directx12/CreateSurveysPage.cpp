@@ -24,7 +24,7 @@ struct ResponseType {
 std::vector<ResponseType> responseTypes;
 std::vector<std::vector<std::string>> surveyData;
 
-static std::string baseDirectory = "C:/AppFilesJSON/";
+static std::string baseDirectory = "C:/LSD/AppFiles/";
 static std::string surveysDirectory = baseDirectory + "TestPrograms/";
 static std::string CSVPath = baseDirectory + "SurveyQuestionsDemo.csv";
 static std::string responseTypesPath = baseDirectory + "responsetypes.json";

@@ -17,9 +17,9 @@
 
 
 // Static variable definitions
-static const char baseDirectory[] = "C:/AppFilesJSON/TestPrograms/";
-static const char responseDirectory[] = "C:/AppFilesJSON/responses/";
-static std::string responseTypesPath = "C:/AppFilesJSON/responsetypes.json";
+static const char baseDirectory[] = "C:/LSD/AppFiles/TestPrograms/";
+static const char responseDirectory[] = "C:/LSD/AppFiles/responses/";
+static std::string responseTypesPath = "C:/LSD/AppFiles/responsetypes.json";
 
 struct ResponseTypeC {
     std::string id;
