@@ -5,7 +5,7 @@ Save files to C:/LSD/...
 
 **AppFiles** contains Test Programs, Responses, teamplate data for response typed, metadata
 
-**SurveyApp** contains app files
+**SurveyApp** contains app code
 
 ## To open in editor mode:
 1. Open Visual Studio 2022 (ensure c++ development tools are installed)
