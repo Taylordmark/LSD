@@ -18,7 +18,7 @@ Save files to C:/LSD/...
 2. Start without debugging with play button OR (Ctrl+F5)
 
 ## About the app
-4 main pages
+
 - **Home Page**
   -  Navigate to different functional pages
 - **Create Surveys**
