@@ -1,3 +1,4 @@
 *.ipch
 *.db
 C:\LSD\SurveyApp\main\win32_directx12\Debug\*
+*.vsidx
