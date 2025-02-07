@@ -1,0 +1,244 @@
+Old Analyze Code
+
+
+#include "Application.h"
+#include "imgui.h"
+#include "implot.h"
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <map>
+#include <cstdlib>
+#include <ctime>
+#include <filesystem>
+#include <iostream>
+#include <set>
+#include <algorithm>  // For std::min
+
+static const std::string baseDirectory = "C:/Surveys/Responses/";  // Base directory for CSV files
+static const std::string testPointMatrixFilePath = "C:/Surveys/TestPointMatrix.csv";  // Path to TestPointMatrix.csv
+
+bool loadCSV2(const std::string& filename, std::vector<std::vector<std::string>>& data, std::vector<std::string>& comments) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Could not open the file: " << filename << std::endl;
+        return false;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::vector<std::string> row;
+        std::string cell;
+        std::istringstream lineStream(line);
+
+        while (std::getline(lineStream, cell, ',')) {
+            row.push_back(cell);
+        }
+
+        if (!row.empty()) {
+            // Check if this is the comment row (first column = "comments")
+            if (row[0] == "comments" && row.size() > 1) {
+                comments.push_back(row[1]);  // Store the comment in the comments vector
+            }
+            else {
+                data.push_back(row);  // Otherwise, add the row to survey data
+            }
+        }
+    }
+
+    return true;
+}
+
+void MyApp::RenderAnalyzeSurveysPage() {
+    // Ensure ImPlot context is available before proceeding
+    ImPlot::CreateContext();
+
+    ImGui::Separator();
+    ImGui::Text("Survey Analysis");
+    ImGui::NewLine();
+    // Display "Back to Home" button only if we're not on the "Survey Completion Percentage" page
+    if (ImGui::Button("Back to Home")) {
+        currentPage = Page::Home;  // Switch to Home page
+    }
+
+    ImGui::NewLine();
+    ImGui::Separator();
+
+    // Declare static variables to persist across frames
+    static std::vector<std::vector<std::string>> surveyData;
+    static std::vector<std::string> surveyFiles;  // Vector to hold filenames
+    static std::set<std::string> uniqueSurveyNames;  // Set to hold unique survey names
+    static std::string selectedSurveyName = "Survey Completion Percentage";  // Default to Survey Completion Percentage
+    static std::vector<std::string> collectedComments;  // Vector to store comments
+
+    // Load survey filenames from the directory if not already loaded
+    if (surveyFiles.empty()) {
+        for (const auto& entry : std::filesystem::directory_iterator(baseDirectory)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".csv") {
+                std::string filename = entry.path().filename().string();
+                surveyFiles.push_back(filename);
+
+                // Extract survey name from the filename (assuming it's before the last '_')
+                size_t lastUnderscore = filename.find_last_of('_');
+                if (lastUnderscore != std::string::npos) {
+                    std::string surveyName = filename.substr(0, lastUnderscore);
+                    uniqueSurveyNames.insert(surveyName);  // Add to the set of unique survey names
+                }
+            }
+        }
+    }
+
+    // Dropdown for selecting a survey name, with a default "Survey Completion Percentage" option
+    if (!uniqueSurveyNames.empty()) {
+        ImGui::Text("Select Survey Name:");
+        if (ImGui::BeginCombo("##SurveyNames", selectedSurveyName.c_str())) {
+            // Add "Survey Completion Percentage" as the first option in the dropdown
+            bool isSelected = (selectedSurveyName == "Survey Completion Percentage");
+            if (ImGui::Selectable("Survey Completion Percentage", isSelected)) {
+                selectedSurveyName = "Survey Completion Percentage";  // Update to the "Survey Completion Percentage" option
+            }
+
+            // Add other survey names
+            for (const auto& surveyName : uniqueSurveyNames) {
+                isSelected = (selectedSurveyName == surveyName);
+                if (ImGui::Selectable(surveyName.c_str(), isSelected)) {
+                    selectedSurveyName = surveyName;  // Update the selected survey name
+
+                    // Load the corresponding survey data
+                    surveyData.clear();
+                    collectedComments.clear();  // Clear previous comments
+                    std::string surveyFilePathPrefix = baseDirectory + selectedSurveyName;
+
+                    for (const auto& entry : std::filesystem::directory_iterator(baseDirectory)) {
+                        if (entry.is_regular_file()) {
+                            std::string filePath = entry.path().string();
+
+                            // Check if the file starts with the base directory + survey name
+                            if (filePath.find(surveyFilePathPrefix) == 0) {
+                                // Check if the file ends with .csv
+                                if (filePath.size() >= 4 && filePath.compare(filePath.size() - 4, 4, ".csv") == 0) {
+                                    bool success = loadCSV2(filePath, surveyData, collectedComments);
+                                    if (!success) {
+                                        // Handle error if needed
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus();  // Keep focus on the selected item
+                }
+            }
+            ImGui::EndCombo();
+        }
+    }
+    else {
+        ImGui::Text("No survey files found.");
+    }
+
+    ImGui::NewLine();
+
+    // If "Survey Completion Percentage" is selected, calculate and plot the percentage
+    if (selectedSurveyName == "Survey Completion Percentage") {
+        // 1. Calculate the total surveys to be completed
+        std::ifstream testPointMatrixFile(testPointMatrixFilePath);
+        int totalTestPoints = 0;
+        if (testPointMatrixFile.is_open()) {
+            std::string line;
+            while (std::getline(testPointMatrixFile, line)) {
+                totalTestPoints++;
+            }
+            testPointMatrixFile.close();
+        }
+
+        // Each row in TestPointMatrix corresponds to 2 surveys, so multiply by 2
+        int totalSurveysToBeCompleted = totalTestPoints * 2;
+
+        // 2. Count the completed surveys (i.e., the number of .csv files in the Responses folder)
+        int completedSurveys = 0;
+        for (const auto& entry : std::filesystem::directory_iterator(baseDirectory)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".csv") {
+                completedSurveys++;
+            }
+        }
+
+        // 3. Calculate the completion percentage
+        float completionPercentage = 0.0f;
+        if (totalSurveysToBeCompleted > 0) {
+            completionPercentage = static_cast<float>(completedSurveys) / static_cast<float>(totalSurveysToBeCompleted) * 100.0f;
+        }
+
+        if (ImPlot::BeginPlot("Survey Completion Percentage")) {
+            // Setup the plot limits (you may adjust these limits as per your data)
+            ImPlot::SetupAxesLimits(0, 1, 0, static_cast<float>(totalSurveysToBeCompleted));
+
+            // Disable X-axis ticks and labels
+            ImPlot::SetupAxisTicks(ImAxis_X1, nullptr, 0, nullptr, false);  // No ticks and labels for X
+            // Disable Y-axis ticks and labels
+            // ImPlot::SetupAxisTicks(ImAxis_Y1, nullptr, 0, nullptr, false);  // No ticks and labels for Y
+
+            // Data for total surveys (background)
+            std::vector<float> totalData = { static_cast<float>(totalSurveysToBeCompleted) };
+            // Data for completed surveys (foreground)
+            std::vector<float> completedData = { static_cast<float>(completedSurveys) };
+
+            // Plot total surveys in light gray (background)
+            ImPlot::PlotBars("Total Surveys", totalData.data(), 1, IM_COL32(200, 200, 200, 255));
+
+            // Plot completed surveys in green (foreground)
+            ImPlot::PlotBars("Completed Surveys", completedData.data(), 1, IM_COL32(0, 255, 0, 255));
+
+            ImPlot::EndPlot();
+            ImGui::NewLine();
+        }
+
+        // Do not display the comments if "Survey Completion Percentage" is selected
+        return;  // Exit early to prevent the comments section from displaying
+    }
+    else if (!surveyData.empty()) {
+        // If survey data is loaded, process and plot it (same as before)
+        std::map<std::string, std::vector<int>> responseCounts;
+
+        // Process the survey data to aggregate responses
+        for (const auto& row : surveyData) {
+            if (row.size() >= 2) {
+                std::string question = row[0];
+                int response = std::stoi(row[1]);
+                responseCounts[question].push_back(response);
+            }
+        }
+
+        // Plot individual surveys as usual
+        for (const auto& [question, responses] : responseCounts) {
+            std::vector<int> counts(5, 0);
+            for (int response : responses) {
+                if (response >= 0 && response < counts.size()) {
+                    counts[response]++;
+                }
+            }
+
+            if (ImPlot::BeginPlot(question.c_str())) {
+                ImPlot::PlotBars("Response Distribution", counts.data(), static_cast<int>(counts.size()));
+                ImPlot::EndPlot();
+                ImGui::NewLine();
+            }
+        }
+    }
+
+    ImGui::Separator();
+    ImGui::NewLine();
+    ImGui::NewLine();
+
+    // Display the collected comments at the bottom (only if not "Survey Completion Percentage")
+    if (selectedSurveyName != "Survey Completion Percentage" && !collectedComments.empty()) {
+        ImGui::Text("Comments:");
+        for (const auto& comment : collectedComments) {
+            ImGui::Text("%s", comment.c_str());
+        }
+    }
+    // Optionally destroy ImPlot context if no longer needed (typically done at application shutdown)
+    // ImPlot::DestroyContext();
+}

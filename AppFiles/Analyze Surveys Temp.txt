@@ -1,0 +1,502 @@
+#include "Application.h"
+#include "imgui.h"
+#include "implot.h"
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <map>
+#include <cstdlib>
+#include <ctime>
+#include <filesystem>
+#include <iostream>
+#include <set>
+#include <algorithm>
+#include "json.hpp"
+
+static std::string responsesDirectory = "C:/AppFilesJSON/Responses/";
+static std::string responseTypesPath = "C:/AppFilesJSON/responsetypes.json";
+static std::string testProgramsPath = "C:/AppFilesJSON/TestPrograms";
+
+
+// Declare static variables to persist across frames
+static std::vector<std::vector<std::string>> surveyData;
+static std::vector<std::string> surveyFiles;  // Vector to hold filenames
+static std::set<std::string> uniqueSurveyNames;  // Set to hold unique survey names
+static std::string selectedSurveyName = "Survey Completion Percentage";  // Default to Survey Completion Percentage
+static std::vector<std::string> collectedComments;  // Vector to store comments
+
+
+// Data to show correct survey
+static int selectedTestProgramIndex = -1;
+static std::string selectedTestProgram = "";
+static std::string selectedTestEvent = "";
+static std::string lastSelectedTestEvent = "";
+
+// Values for counts after filtering
+static std::vector<int> filteredResponseCounts;
+static std::vector<int> filteredSurveyCounts;
+
+
+
+
+struct ResponseTypeA {
+    std::string id;
+    int count;
+    std::vector<std::string> labels;  // List of labels for the response options
+};
+
+std::vector<ResponseTypeA> responseTypes;
+
+
+// Load response types from a JSON file
+void LoadResponseTypesA(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Failed to load file: " << filename << std::endl;
+        return;
+    }
+
+    nlohmann::json jsonData;
+    file >> jsonData;
+
+    responseTypes.clear();  // Clear the global responseTypes vector
+    for (const auto& item : jsonData["responseTypes"]) {
+        ResponseTypeA rt;
+        rt.id = item["id"];  // Correctly using the `id` from the JSON
+        rt.count = item["count"];  // Correctly using the `count`
+        rt.labels = item["labels"].get<std::vector<std::string>>();  // Correctly using the `labels`
+        responseTypes.push_back(rt);
+    }
+}
+
+std::vector<std::string> GetFolderNamesA(const std::string& directoryPath) {
+    std::vector<std::string> folderNames;
+    try {
+        for (const auto& entry : std::filesystem::directory_iterator(directoryPath)) {
+            if (entry.is_directory()) {
+                folderNames.push_back(entry.path().filename().string());
+            }
+        }
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Error reading directory: " << e.what() << std::endl;
+    }
+    return folderNames;
+}
+
+// Display Test Program Combo Box (Dropdown) after getting local folder names
+void RenderTestProgramComboA(const std::vector<std::string>& testPrograms) {
+    ImGui::Text("Select Test Program");
+    ImGui::SameLine();
+    if (ImGui::BeginCombo("##Test Program", selectedTestProgramIndex == -1 ? "Select" : testPrograms[selectedTestProgramIndex].c_str())) {
+        for (int i = 0; i < testPrograms.size(); ++i) {
+            bool isSelected = (selectedTestProgramIndex == i);
+            if (ImGui::Selectable(testPrograms[i].c_str(), isSelected)) {
+                if (selectedTestProgramIndex != i) {
+                    selectedTestProgramIndex = i;
+                    selectedTestProgram = testPrograms[i];
+                    // refreshData = True;
+                }
+            }
+        }
+        ImGui::EndCombo();
+    }
+}
+
+// Function to count the number of files in a folder
+int CountFilesInFolder(const std::string& folderPath) {
+    int count = 0;
+    for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
+        if (entry.is_regular_file()) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+
+
+
+
+
+
+
+
+
+
+void MyApp::RenderAnalyzeSurveysPage() {
+    // Ensure ImPlot context is available before proceeding
+    ImPlot::CreateContext();
+
+    // Calculate dimensions
+    float availableWidth = ImGui::GetContentRegionAvail().x;
+    float availableHeight = ImGui::GetContentRegionAvail().y;
+    float childHeight = availableHeight * 0.9f;
+
+    static std::vector<std::string> testPrograms = GetFolderNamesA(responsesDirectory);
+    static std::vector<std::string> testEvents;
+    static std::vector<std::string> respondedEvents;
+
+    if (responseTypes.empty()) {
+        LoadResponseTypesA(responseTypesPath);
+    }
+
+    ImGui::BeginChild("Test Event Display", ImVec2(availableWidth * 0.4f, childHeight), true);
+
+    ImGui::Separator();
+    ImGui::Text("Survey Analysis");
+    ImGui::NewLine();
+
+    // Render the Test Program combo box
+    RenderTestProgramComboA(testPrograms);
+
+    // Values for survey completion summary by COI
+    static std::map<int,int> COIResponseCounts;
+    static std::map<int,int> COISurveyCounts;
+
+    static float totalResponses = 0;
+    static float totalSurveys = 0;
+
+    // If test events have not been loaded and a test program is selected, load test events from TestProgram/Program folder
+    if (testEvents.empty() && selectedTestProgramIndex != -1) {
+        std::cout << "Why am I running right now" << std::endl;
+        static std::string testProgramPath = testProgramsPath + "/" + selectedTestProgram;
+        testEvents = GetFolderNamesA(testProgramPath);
+
+        COISurveyCounts.clear();
+
+        for (const auto& event : testEvents) {
+            // Extract the number after the last underscore
+            size_t pos = event.rfind('_');
+            if (pos != std::string::npos) {
+                std::string numberStr = event.substr(pos + 1);  // Get the part after the last underscore
+                int number = std::stoi(numberStr);  // Convert to integer
+
+                // Count the number of files in the event's folder
+                std::string eventFolderPath = testProgramsPath + "/" + selectedTestProgram + "/" + event;
+                int fileCount = CountFilesInFolder(eventFolderPath);
+
+                // Multiply the number by the file count
+                int result = number * fileCount;
+
+                // Get the second character of the event value
+                if (event.length() > 1) {
+                    char coiIndexChar = event[1];
+                    int coiIndex = coiIndexChar - '1';
+
+                    if (COISurveyCounts.contains(coiIndex)) {
+                        COISurveyCounts[coiIndex] += result;
+                    }
+                    else{ COISurveyCounts[coiIndex] = result; }
+                }
+
+                totalSurveys += result;
+            }
+        }
+    }
+
+    // If responses have not been loaded and a test program is selected, load test events from Responses/Program folder
+    if (respondedEvents.empty() && selectedTestProgramIndex != -1) {
+        std::cout << "Why am I running right now" << std::endl;
+        static std::string testResponsesPath = responsesDirectory + "/" + selectedTestProgram;
+
+        respondedEvents = GetFolderNamesA(testResponsesPath);
+
+        COIResponseCounts.clear();
+
+        for (const auto& event : respondedEvents) {
+
+            // Count the number of files in the event's folder
+            std::string eventFolderPath = testProgramsPath + "/" + selectedTestProgram + "/" + event;
+            int fileCount = CountFilesInFolder(eventFolderPath);
+
+            // Get the second character of the event value
+            if (event.length() > 1) {
+                char coiIndexChar = event[1];
+                int coiIndex = coiIndexChar - '1';
+
+                // Get the second character of the event value
+                if (event.length() > 1) {
+                    char coiIndexChar = event[1];
+                    int coiIndex = coiIndexChar - '1';
+
+                    if (COIResponseCounts.contains(coiIndex)) {
+                        COIResponseCounts[coiIndex] += fileCount;
+                    }
+                    else { COIResponseCounts[coiIndex] = fileCount; }
+                }
+
+                totalResponses += fileCount;
+            }
+        }
+
+    }
+
+
+
+
+
+    // If both are filled, do math for percent completion by COI and totals
+    if (!testEvents.empty() && !respondedEvents.empty()) {
+
+        // Calculate the completion percentages for each COI
+        std::vector<float> coiCompletionPercentages;
+        float totalCompletionPercentage = 0.0f;
+
+        // Calculate individual COI completion percentages and total completion
+        for (size_t i = 0; i < COISurveyCounts.size(); ++i) {
+            // Avoid division by zero and calculate completion percentage
+            if (COIResponseCounts.contains(i) && COIResponseCounts[i] > 0) {
+                float completionPercentage = static_cast<float>(COIResponseCounts[i]) / static_cast<float>(COISurveyCounts[i]) * 100.0f;
+                coiCompletionPercentages.push_back(completionPercentage);
+                totalResponses += COIResponseCounts[i];
+            }
+            else {
+                coiCompletionPercentages.push_back(0.0f);
+            }
+            totalSurveys += COISurveyCounts[i];
+        }
+
+        // Calculate the total completion percentage for all COIs
+        float totalCompletion = (totalResponses / totalSurveys) * 100.0f;
+
+        // Debug: Print the total completion percentage
+        std::cout << "Total completion percentage: " << totalCompletion << "%" << std::endl;
+
+
+        if (ImPlot::BeginPlot("My Plot")) {
+
+            std::vector<int> myData = { 1, 2, 3, 4, 5, 6, 7 };
+
+            // Setup the plot limits: X-axis should range from 0 to the size of myData, Y-axis from 0 to 100.
+            ImPlot::SetupAxesLimits(0, static_cast<float>(myData.size()), 0, 100);  // X-axis: number of COIs, Y-axis: percentage (0-100%)
+            
+            // Plot the bars for myData
+            ImPlot::PlotBars("My Bars", myData.data(), myData.size(), 0.8f, IM_COL32(0, 255, 0, 255));
+
+            // Calculate the total sum of myData
+            float totalCompletion = std::accumulate(myData.begin(), myData.end(), 0);
+
+            // Plot total completion percentage as a separate bar (at the last index)
+            std::vector<float> totalCompletionData = { totalCompletion };  // Total completion value
+            ImPlot::PlotBars("Total", totalCompletionData.data(), totalCompletionData.size(), 0.8f, IM_COL32(255, 0, 0, 255));
+
+            ImPlot::EndPlot();
+            ImGui::NewLine();
+        }
+
+        /*
+        // Plot completion rates by COI
+        if (ImPlot::BeginPlot("Survey Completion Percentage")) {
+
+
+            // Setup the plot limits
+            ImPlot::SetupAxesLimits(0, static_cast<float>(COISurveyCounts.size()), 0, 100);  // X-axis: number of COIs, Y-axis: percentage (0-100%)
+
+            // Disable X-axis ticks and labels (for clarity)
+            ImPlot::SetupAxisTicks(ImAxis_X1, nullptr, 0, nullptr, false);
+
+            // Disable Y-axis ticks and labels (for clarity)
+            ImPlot::SetupAxisTicks(ImAxis_Y1, nullptr, 0, nullptr, false);
+
+            // Plot individual COI completion percentages as bars
+            if (!coiCompletionPercentages.empty()) {
+                ImPlot::PlotBars("COI Completion Percentages", coiCompletionPercentages.data(), coiCompletionPercentages.size(), 0.8f, IM_COL32(0, 255, 0, 255));
+            }
+
+            // Plot total completion percentage as a separate bar (at the end)
+            std::vector<float> totalCompletionData = { totalCompletion };  // Total completion percentage
+            // Plot the total completion bar at the last index (COISurveyCounts.size())
+            ImPlot::PlotBars("Total Completion", totalCompletionData.data(), totalCompletionData.size(), 0.8f, IM_COL32(255, 0, 0, 255));
+
+            ImPlot::EndPlot();
+            ImGui::NewLine();
+        }
+        */
+    }
+
+
+
+
+
+
+    if (ImGui::Button("Back to Home")) {
+        currentPage = Page::Home;  // Switch to Home page
+        selectedTestProgram = -1;
+    }
+
+    ImGui::NewLine();
+    ImGui::Separator();
+
+    
+     
+    ImGui::EndChild();
+
+
+
+
+
+    
+    /*
+    // Dropdown for selecting a survey name, with a default "Survey Completion Percentage" option
+    if (!uniqueSurveyNames.empty()) {
+        ImGui::Text("Select Survey Name:");
+        if (ImGui::BeginCombo("##SurveyNames", selectedSurveyName.c_str())) {
+            // Add "Survey Completion Percentage" as the first option in the dropdown
+            bool isSelected = (selectedSurveyName == "Survey Completion Percentage");
+            if (ImGui::Selectable("Survey Completion Percentage", isSelected)) {
+                selectedSurveyName = "Survey Completion Percentage";  // Update to the "Survey Completion Percentage" option
+            }
+
+            // Add other survey names
+            for (const auto& surveyName : uniqueSurveyNames) {
+                isSelected = (selectedSurveyName == surveyName);
+                if (ImGui::Selectable(surveyName.c_str(), isSelected)) {
+                    selectedSurveyName = surveyName;  // Update the selected survey name
+
+                    // Load the corresponding survey data
+                    surveyData.clear();
+                    collectedComments.clear();  // Clear previous comments
+                    std::string surveyFilePathPrefix = baseDirectory + selectedSurveyName;
+
+                    for (const auto& entry : std::filesystem::directory_iterator(baseDirectory)) {
+                        if (entry.is_regular_file()) {
+                            std::string filePath = entry.path().string();
+
+                            // Check if the file starts with the base directory + survey name
+                            if (filePath.find(surveyFilePathPrefix) == 0) {
+                                // Check if the file ends with .csv
+                                if (filePath.size() >= 4 && filePath.compare(filePath.size() - 4, 4, ".csv") == 0) {
+                                    bool success = loadCSV2(filePath, surveyData, collectedComments);
+                                    if (!success) {
+                                        // Handle error if needed
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus();  // Keep focus on the selected item
+                }
+            }
+            ImGui::EndCombo();
+        }
+    }
+    else {
+        ImGui::Text("No survey files found.");
+    }
+
+    */
+
+    ImGui::NewLine();
+
+    /*
+    // If "Survey Completion Percentage" is selected, calculate and plot the percentage
+    if (selectedSurveyName == "Survey Completion Percentage") {
+        // 1. Calculate the total surveys to be completed
+        std::ifstream testPointMatrixFile(testPointMatrixFilePath);
+        int totalTestPoints = 0;
+        if (testPointMatrixFile.is_open()) {
+            std::string line;
+            while (std::getline(testPointMatrixFile, line)) {
+                totalTestPoints++;
+            }
+            testPointMatrixFile.close();
+        }
+
+        // Each row in TestPointMatrix corresponds to 2 surveys, so multiply by 2
+        int totalSurveysToBeCompleted = totalTestPoints * 2;
+
+        // 2. Count the completed surveys (i.e., the number of .csv files in the Responses folder)
+        int completedSurveys = 0;
+        for (const auto& entry : std::filesystem::directory_iterator(baseDirectory)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".csv") {
+                completedSurveys++;
+            }
+        }
+
+        // 3. Calculate the completion percentage
+        float completionPercentage = 0.0f;
+        if (totalSurveysToBeCompleted > 0) {
+            completionPercentage = static_cast<float>(completedSurveys) / static_cast<float>(totalSurveysToBeCompleted) * 100.0f;
+        }
+
+        if (ImPlot::BeginPlot("Survey Completion Percentage")) {
+            // Setup the plot limits (you may adjust these limits as per your data)
+            ImPlot::SetupAxesLimits(0, 1, 0, static_cast<float>(totalSurveysToBeCompleted));
+
+            // Disable X-axis ticks and labels
+            ImPlot::SetupAxisTicks(ImAxis_X1, nullptr, 0, nullptr, false);  // No ticks and labels for X
+            // Disable Y-axis ticks and labels
+            // ImPlot::SetupAxisTicks(ImAxis_Y1, nullptr, 0, nullptr, false);  // No ticks and labels for Y
+
+            // Data for total surveys (background)
+            std::vector<float> totalData = { static_cast<float>(totalSurveysToBeCompleted) };
+            // Data for completed surveys (foreground)
+            std::vector<float> completedData = { static_cast<float>(completedSurveys) };
+
+            // Plot total surveys in light gray (background)
+            ImPlot::PlotBars("Total Surveys", totalData.data(), 1, IM_COL32(200, 200, 200, 255));
+
+            // Plot completed surveys in green (foreground)
+            ImPlot::PlotBars("Completed Surveys", completedData.data(), 1, IM_COL32(0, 255, 0, 255));
+
+            ImPlot::EndPlot();
+            ImGui::NewLine();
+        }
+
+        // Do not display the comments if "Survey Completion Percentage" is selected
+        return;  // Exit early to prevent the comments section from displaying
+    }
+    else if (!surveyData.empty()) {
+        // If survey data is loaded, process and plot it (same as before)
+        std::map<std::string, std::vector<int>> responseCounts;
+
+        // Process the survey data to aggregate responses
+        for (const auto& row : surveyData) {
+            if (row.size() >= 2) {
+                std::string question = row[0];
+                int response = std::stoi(row[1]);
+                responseCounts[question].push_back(response);
+            }
+        }
+
+        // Plot individual surveys as usual
+        for (const auto& [question, responses] : responseCounts) {
+            std::vector<int> counts(5, 0);
+            for (int response : responses) {
+                if (response >= 0 && response < counts.size()) {
+                    counts[response]++;
+                }
+            }
+
+            if (ImPlot::BeginPlot(question.c_str())) {
+                ImPlot::PlotBars("Response Distribution", counts.data(), static_cast<int>(counts.size()));
+                ImPlot::EndPlot();
+                ImGui::NewLine();
+            }
+        }
+    }
+
+    */
+
+    ImGui::Separator();
+    ImGui::NewLine();
+    ImGui::NewLine();
+
+    /*
+    // Display the collected comments at the bottom (only if not "Survey Completion Percentage")
+    if (selectedSurveyName != "Survey Completion Percentage" && !collectedComments.empty()) {
+        ImGui::Text("Comments:");
+        for (const auto& comment : collectedComments) {
+            ImGui::Text("%s", comment.c_str());
+        }
+    }
+    */
+
+    // Optionally destroy ImPlot context if no longer needed (typically done at application shutdown)
+    // ImPlot::DestroyContext();
+}
