@@ -19,18 +19,18 @@ Save files to C:/LSD/...
 
 ## About the app
 4 main pages
-- **Home Page**\n
-  Navigate to different functional pages
-- **Create Surveys**\n
-  Currently pulls data from "C:\LSD\AppFiles\SurveyQuestionsDemo.csv"\n
-  Users can edit survey questions, response types\n
-  Submittal creates folder in Test Program folder with all survey data\n
-- **Complete Surveys**\n
-  Pulls survey from associated test program folder\n
-  Displays survey\n
-  Submittal creates completed survey file\n
-- **Analyze Surveys**\n
-  Shows survey completion breakdown
+- **Home Page**
+  -  Navigate to different functional pages
+- **Create Surveys**
+  -  Currently pulls data from "C:\LSD\AppFiles\SurveyQuestionsDemo.csv"
+  -  Users can edit survey questions, response types
+  -  Submittal creates folder in Test Program folder with all survey data
+- **Complete Surveys**
+  -  Pulls survey from associated test program folder
+  -  Displays survey
+  -  Submittal creates completed survey file
+- **Analyze Surveys**
+  -  Shows survey completion breakdown
   
   
 
