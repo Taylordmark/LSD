@@ -14,7 +14,7 @@ Save files to C:/LSD/...
     "C:\LSD\SurveyApp\main\imgui_examples.sln"
 
 ## To open and run the app
-1. Open Source Files/Application.cpp
+1. Open Source Files/Application.cpp in Visual Studio 2022
 2. Start without debugging with play button OR (Ctrl+F5)
 
 Updated version of app is available as an .exe file after running at ""C:\LSD\SurveyApp\main\win32_directx12\Debug\win32_directx12.exe""
