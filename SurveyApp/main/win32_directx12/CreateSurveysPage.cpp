@@ -96,6 +96,7 @@ std::vector<std::vector<std::string>> surveyData;
 
 static std::string baseDirectory = "C:/LSD/AppFiles/";
 static std::string surveysDirectory = baseDirectory + "TestPrograms/";
+static std::string responsesDirectory = baseDirectory + "Responses/";
 // static std::string CSVPath = baseDirectory + "SurveyQuestionsDemo.csv";
 static std::string responseTypesPath = baseDirectory + "responsetypes.json";
 
@@ -392,6 +393,9 @@ void MyApp::RenderCreateSurveysPage() {
 
         // Ensure the directory for the test event exists before saving MOPS JSON files
         EnsureDirectoryExists(fullDirectory);
+
+        // Do the same for the responses directory
+        EnsureDirectoryExists(responsesDirectory + folder + "/");
 
         // Iterate over editableData to save MOPS JSON files for each Test Event and MOPS combination
         for (const auto& [testEvent, mopsMap] : editableData) {

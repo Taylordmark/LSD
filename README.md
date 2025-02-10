@@ -38,7 +38,6 @@ Updated version of app is available as an .exe file after running at ""C:\LSD\Su
 
 
 ## To Do:
-  - **Create surveys** submittal should make corresponding subfolder in Responses
   - Add metadata filters to **Analyze Surveys** (cockpit position etc)
   - Add sentiment analysis of surveys using hugging face pretrained model to **Analyze Surveys**
   - Make app look nicer with better fonts, color themes
