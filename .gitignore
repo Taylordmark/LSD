@@ -8,3 +8,4 @@ SurveyApp\main\win32_directx12\Debug\*
 *.obj
 *.exe
 *.recipe
+/SurveyApp/main/win32_directx12/Debug
