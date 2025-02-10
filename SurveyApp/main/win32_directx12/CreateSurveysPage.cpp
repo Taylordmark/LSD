@@ -333,6 +333,10 @@ void MyApp::RenderCreateSurveysPage() {
         editableData.clear();
         needsReload = true;
     }
+    ImGui::SameLine();
+    if (ImGui::Button("Back to Home")) {
+        currentPage = Page::Home;
+    }
     ImGui::NewLine();
 
     // Load data once
@@ -415,10 +419,6 @@ void MyApp::RenderCreateSurveysPage() {
         currentPage = Page::Home;
     }
 
-    ImGui::SameLine();
-    if (ImGui::Button("Back")) {
-        currentPage = Page::Home;
-    }
     ImGui::EndChild();
 
     // Handle error pop-ups
