@@ -13,6 +13,75 @@
 #include "CreateSurveysPage.h"
 #include "json.hpp"
 
+
+#include <Windows.h>
+#include <string>
+#include <shobjidl.h> 
+
+std::string sSelectedFile;
+std::string sFilePath;
+bool openFile()
+{
+    //  CREATE FILE OBJECT INSTANCE
+    HRESULT f_SysHr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    if (FAILED(f_SysHr))
+        return FALSE;
+
+    // CREATE FileOpenDialog OBJECT
+    IFileOpenDialog* f_FileSystem;
+    f_SysHr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog, reinterpret_cast<void**>(&f_FileSystem));
+    if (FAILED(f_SysHr)) {
+        CoUninitialize();
+        return FALSE;
+    }
+
+    //  SHOW OPEN FILE DIALOG WINDOW
+    f_SysHr = f_FileSystem->Show(NULL);
+    if (FAILED(f_SysHr)) {
+        f_FileSystem->Release();
+        CoUninitialize();
+        return FALSE;
+    }
+
+    //  RETRIEVE FILE NAME FROM THE SELECTED ITEM
+    IShellItem* f_Files;
+    f_SysHr = f_FileSystem->GetResult(&f_Files);
+    if (FAILED(f_SysHr)) {
+        f_FileSystem->Release();
+        CoUninitialize();
+        return FALSE;
+    }
+
+    //  STORE AND CONVERT THE FILE NAME
+    PWSTR f_Path;
+    f_SysHr = f_Files->GetDisplayName(SIGDN_FILESYSPATH, &f_Path);
+    if (FAILED(f_SysHr)) {
+        f_Files->Release();
+        f_FileSystem->Release();
+        CoUninitialize();
+        return FALSE;
+    }
+
+    //  FORMAT AND STORE THE FILE PATH
+    std::wstring path(f_Path);
+    std::string c(path.begin(), path.end());
+    sFilePath = c;
+
+    //  FORMAT STRING FOR EXECUTABLE NAME
+    const size_t slash = sFilePath.find_last_of("/\\");
+    sSelectedFile = sFilePath.substr(slash + 1);
+
+    //  SUCCESS, CLEAN UP
+    CoTaskMemFree(f_Path);
+    f_Files->Release();
+    f_FileSystem->Release();
+    CoUninitialize();
+    return TRUE;
+}
+
+bool result = FALSE;
+
+
 namespace fs = std::filesystem;
 
 struct ResponseType {
@@ -24,10 +93,14 @@ struct ResponseType {
 std::vector<ResponseType> responseTypes;
 std::vector<std::vector<std::string>> surveyData;
 
+
 static std::string baseDirectory = "C:/LSD/AppFiles/";
 static std::string surveysDirectory = baseDirectory + "TestPrograms/";
-static std::string CSVPath = baseDirectory + "SurveyQuestionsDemo.csv";
+// static std::string CSVPath = baseDirectory + "SurveyQuestionsDemo.csv";
 static std::string responseTypesPath = baseDirectory + "responsetypes.json";
+
+
+static std::string CSVPath = "";
 
 static char testProgramName[128] = {};
 
@@ -253,8 +326,17 @@ void MyApp::RenderCreateSurveysPage() {
 
     static bool isFirstSave = true; // Track if it's the first save attempt
 
+    ImGui::NewLine();
+    if (ImGui::Button("Select Surveys csv file")) {
+        result = openFile();
+        CSVPath = sFilePath.c_str();
+        editableData.clear();
+        needsReload = true;
+    }
+    ImGui::NewLine();
+
     // Load data once
-    if (needsReload) {
+    if (needsReload && CSVPath.size() > 1) {
         LoadDataFromFile(CSVPath, surveyData);
         LoadResponseTypesFromFile(responseTypesPath);
 
@@ -274,18 +356,22 @@ void MyApp::RenderCreateSurveysPage() {
         needsReload = false;
     }
 
-    ImGui::BeginChild("Survey Editor", ImVec2(availableWidth * 0.7f, childHeight), true);
+    auto nestedChildHeight = childHeight- 100.0f;
+
+    ImGui::BeginChild("Survey Editor", ImVec2(availableWidth * 0.7f, nestedChildHeight), true);
     RenderSurveyData(editableData, needsSave);
     ImGui::EndChild();
 
     ImGui::SameLine();
-    ImGui::BeginChild("Response Types", ImVec2(availableWidth * 0.25f, childHeight), true);
+    ImGui::BeginChild("Response Types", ImVec2(availableWidth * 0.25f, nestedChildHeight), true);
     RenderResponseTypes();
     ImGui::EndChild();
 
     // Save and Back buttons
-    ImGui::BeginChild("SaveAndBack", ImVec2(availableWidth, childHeight * 0.1f), false);
-
+    ImGui::BeginChild("SaveAndBack", ImVec2(availableWidth, 100.0f), false);
+    ImGui::NewLine();
+    ImGui::Separator();
+    ImGui::Separator();
     ImGui::Text("Enter Test Program Name:");
     ImGui::InputText("Test Program Name", testProgramName, IM_ARRAYSIZE(testProgramName));
 

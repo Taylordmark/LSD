@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "C:\\LSD\\SurveyApp\\main\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B4CF9797-519D-4AFE-A8F4-5141A6B521D3}|win32_directx12\\win32_directx12.vcxproj|C:\\LSD\\SurveyApp\\main\\win32_directx12\\AnalyzeSurveysPage.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{B4CF9797-519D-4AFE-A8F4-5141A6B521D3}|win32_directx12\\win32_directx12.vcxproj|solutionrelative:win32_directx12\\AnalyzeSurveysPage.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{B4CF9797-519D-4AFE-A8F4-5141A6B521D3}|win32_directx12\\win32_directx12.vcxproj|C:\\LSD\\SurveyApp\\main\\win32_directx12\\CreateSurveysPage.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{B4CF9797-519D-4AFE-A8F4-5141A6B521D3}|win32_directx12\\win32_directx12.vcxproj|solutionrelative:win32_directx12\\CreateSurveysPage.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -27,14 +27,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "AnalyzeSurveysPage.cpp",
-              "DocumentMoniker": "C:\\LSD\\SurveyApp\\main\\win32_directx12\\AnalyzeSurveysPage.cpp",
-              "RelativeDocumentMoniker": "win32_directx12\\AnalyzeSurveysPage.cpp",
-              "ToolTip": "C:\\LSD\\SurveyApp\\main\\win32_directx12\\AnalyzeSurveysPage.cpp*",
-              "RelativeToolTip": "win32_directx12\\AnalyzeSurveysPage.cpp*",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAA3AAAAAAAAAA==",
+              "Title": "CreateSurveysPage.cpp",
+              "DocumentMoniker": "C:\\LSD\\SurveyApp\\main\\win32_directx12\\CreateSurveysPage.cpp",
+              "RelativeDocumentMoniker": "win32_directx12\\CreateSurveysPage.cpp",
+              "ToolTip": "C:\\LSD\\SurveyApp\\main\\win32_directx12\\CreateSurveysPage.cpp*",
+              "RelativeToolTip": "win32_directx12\\CreateSurveysPage.cpp*",
+              "ViewState": "AgIAAF8BAAAAAAAAAAAAAGYBAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-02-07T21:12:16.783Z",
+              "WhenOpened": "2025-02-10T16:43:53.173Z",
               "EditorCaption": ""
             }
           ]

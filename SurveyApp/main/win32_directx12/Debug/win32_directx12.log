@@ -1,0 +1,323 @@
+﻿  CreateSurveysPage.cpp
+C:\LSD\SurveyApp\json.hpp(22179,18): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(22179,18):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(24552,27):
+          see reference to class template instantiation 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>' being compiled
+          C:\LSD\SurveyApp\json.hpp(22177,14):
+          while compiling class template member function 'nlohmann::json_abi_v3_11_3::detail::iter_impl<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>> nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::end(void) noexcept'
+              C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(223,37):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::end' in 'LoadResponseTypesFromFile'
+  
+C:\LSD\SurveyApp\json.hpp(22154,18): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(22154,18):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(22152,14):
+          while compiling class template member function 'nlohmann::json_abi_v3_11_3::detail::iter_impl<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>> nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::begin(void) noexcept'
+              C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(223,37):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::begin' in 'LoadResponseTypesFromFile'
+  
+C:\LSD\SurveyApp\json.hpp(21516,18): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(21516,18):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(21503,15):
+          while compiling class template member function 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void> &nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::operator [](std::basic_string<char,std::char_traits<char>,std::allocator<char>>)'
+              C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(190,41):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::operator []' in 'SaveSurveyToJSON'
+  
+C:\LSD\SurveyApp\json.hpp(20661,18): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(20661,18):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(20656,14):
+          while compiling class template member function 'std::basic_string<char,std::char_traits<char>,std::allocator<char>> nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::dump(const int,const char,const bool,const nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::error_handler_t) const'
+              C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(206,14):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::dump' in 'SaveSurveyToJSON'
+  
+C:\LSD\SurveyApp\json.hpp(12343,50): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(12343,50):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(23527,26):
+          while compiling class template member function 'std::istream &nlohmann::json_abi_v3_11_3::operator >>(std::istream &,nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void> &)'
+              C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(181,22):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::operator >>' in 'SaveSurveyToJSON'
+          C:\LSD\SurveyApp\json.hpp(23529,9):
+          see reference to class template instantiation 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::input_stream_adapter>' being compiled
+          C:\LSD\SurveyApp\json.hpp(12343,10):
+          while compiling class template member function 'void nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::input_stream_adapter>::parse(const bool,BasicJsonType &)'
+          with
+          [
+              BasicJsonType=nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>
+          ]
+              C:\LSD\SurveyApp\json.hpp(23529,47):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::input_stream_adapter>::parse' in 'nlohmann::json_abi_v3_11_3::operator >>'
+              C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(181,22):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::operator >>' in 'SaveSurveyToJSON'
+  
+C:\LSD\SurveyApp\json.hpp(14555,31): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(14555,31):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(24564,41):
+          see reference to class template instantiation 'nlohmann::json_abi_v3_11_3::json_pointer<StringType>' being compiled
+          with
+          [
+              StringType=std::string
+          ]
+          C:\LSD\SurveyApp\json.hpp(14553,34):
+          while compiling class template member function 'std::vector<std::basic_string<char,std::char_traits<char>,std::allocator<char>>,std::allocator<std::basic_string<char,std::char_traits<char>,std::allocator<char>>>> nlohmann::json_abi_v3_11_3::json_pointer<StringType>::split(const std::basic_string<char,std::char_traits<char>,std::allocator<char>> &)'
+          with
+          [
+              StringType=std::string
+          ]
+              C:\LSD\SurveyApp\json.hpp(13950,27):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::json_pointer<StringType>::split' in 'nlohmann::json_abi_v3_11_3::json_pointer<StringType>::json_pointer'
+          with
+          [
+              StringType=std::string
+          ]
+              C:\LSD\SurveyApp\json.hpp(24569,5):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::json_pointer<StringType>::json_pointer' in 'nlohmann::json_abi_v3_11_3::literals::json_literals::operator ""_json_pointer'
+          with
+          [
+              StringType=std::string
+          ]
+  
+C:\LSD\SurveyApp\json.hpp(8905,21): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(8905,21):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(12317,42):
+          see reference to class template instantiation 'nlohmann::json_abi_v3_11_3::detail::lexer<BasicJsonType,InputAdapterType>' being compiled
+          with
+          [
+              BasicJsonType=nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,
+              InputAdapterType=nlohmann::json_abi_v3_11_3::detail::input_stream_adapter
+          ]
+          C:\LSD\SurveyApp\json.hpp(8902,17):
+          while compiling class template member function 'std::string nlohmann::json_abi_v3_11_3::detail::lexer<BasicJsonType,InputAdapterType>::get_token_string(void) const'
+          with
+          [
+              BasicJsonType=nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,
+              InputAdapterType=nlohmann::json_abi_v3_11_3::detail::input_stream_adapter
+          ]
+              C:\LSD\SurveyApp\json.hpp(12353,32):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::lexer<BasicJsonType,InputAdapterType>::get_token_string' in 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::input_stream_adapter>::parse'
+          with
+          [
+              BasicJsonType=nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,
+              InputAdapterType=nlohmann::json_abi_v3_11_3::detail::input_stream_adapter
+          ]
+              C:\LSD\SurveyApp\json.hpp(23529,47):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::input_stream_adapter>::parse' in 'nlohmann::json_abi_v3_11_3::operator >>'
+              C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(181,22):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::operator >>' in 'SaveSurveyToJSON'
+  
+C:\LSD\SurveyApp\json.hpp(18769,21): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(18769,21):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(20656,14):
+          while compiling class template member function 'std::basic_string<char,std::char_traits<char>,std::allocator<char>> nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::dump(const int,const char,const bool,const nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::error_handler_t) const'
+              C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(206,14):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::dump' in 'SaveSurveyToJSON'
+          C:\LSD\SurveyApp\json.hpp(20662,20):
+          see reference to class template instantiation 'nlohmann::json_abi_v3_11_3::detail::serializer<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>>' being compiled
+          C:\LSD\SurveyApp\json.hpp(18767,24):
+          while compiling class template member function 'std::string nlohmann::json_abi_v3_11_3::detail::serializer<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>>::hex_bytes(uint8_t)'
+              C:\LSD\SurveyApp\json.hpp(18603,29):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::serializer<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>>::hex_bytes' in 'nlohmann::json_abi_v3_11_3::detail::serializer<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>>::dump_escaped'
+              C:\LSD\SurveyApp\json.hpp(18230,37):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::serializer<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>>::dump_escaped' in 'nlohmann::json_abi_v3_11_3::detail::serializer<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>>::dump'
+              C:\LSD\SurveyApp\json.hpp(20666,19):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::serializer<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>>::dump' in 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::dump'
+              C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(206,14):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::dump' in 'SaveSurveyToJSON'
+  
+C:\LSD\SurveyApp\json.hpp(23419,20): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(23419,20):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(24557,28):
+          see reference to function template instantiation 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void> nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::parse<const char*>(IteratorType,IteratorType,std::function<bool (int,nlohmann::json_abi_v3_11_3::detail::parse_event_t,nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void> &)>,const bool,const bool)' being compiled
+          with
+          [
+              IteratorType=const char *
+          ]
+              C:\LSD\SurveyApp\json.hpp(24557,5):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::parse' in 'nlohmann::json_abi_v3_11_3::literals::json_literals::operator ""_json'
+  
+C:\LSD\SurveyApp\json.hpp(6367,18): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(6367,18):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(6711,36):
+          see reference to class template instantiation 'nlohmann::json_abi_v3_11_3::detail::iterator_input_adapter<const char *>' being compiled
+          C:\LSD\SurveyApp\json.hpp(6363,47):
+          while compiling class template member function 'int nlohmann::json_abi_v3_11_3::detail::iterator_input_adapter<const char *>::get_character(void)'
+              C:\LSD\SurveyApp\json.hpp(8803,21):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::iterator_input_adapter<const char *>::get_character' in 'nlohmann::json_abi_v3_11_3::detail::lexer<BasicJsonType,InputAdapterType>::get'
+          with
+          [
+              BasicJsonType=nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,
+              InputAdapterType=nlohmann::json_abi_v3_11_3::detail::iterator_input_adapter<const char *>
+          ]
+              C:\LSD\SurveyApp\json.hpp(8958,16):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::lexer<BasicJsonType,InputAdapterType>::get' in 'nlohmann::json_abi_v3_11_3::detail::lexer<BasicJsonType,InputAdapterType>::skip_whitespace'
+          with
+          [
+              BasicJsonType=nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,
+              InputAdapterType=nlohmann::json_abi_v3_11_3::detail::iterator_input_adapter<const char *>
+          ]
+              C:\LSD\SurveyApp\json.hpp(8973,24):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::lexer<BasicJsonType,InputAdapterType>::skip_whitespace' in 'nlohmann::json_abi_v3_11_3::detail::lexer<BasicJsonType,InputAdapterType>::scan'
+          with
+          [
+              BasicJsonType=nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,
+              InputAdapterType=nlohmann::json_abi_v3_11_3::detail::iterator_input_adapter<const char *>
+          ]
+              C:\LSD\SurveyApp\json.hpp(12725,9):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::lexer<BasicJsonType,InputAdapterType>::scan' in 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::iterator_input_adapter<const char *>>::get_token'
+          with
+          [
+              BasicJsonType=nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,
+              InputAdapterType=nlohmann::json_abi_v3_11_3::detail::iterator_input_adapter<const char *>
+          ]
+              C:\LSD\SurveyApp\json.hpp(12351,13):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::iterator_input_adapter<const char *>>::get_token' in 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::iterator_input_adapter<const char *>>::parse'
+              C:\LSD\SurveyApp\json.hpp(23420,129):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::iterator_input_adapter<const char *>>::parse' in 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::parse'
+              C:\LSD\SurveyApp\json.hpp(24557,5):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::parse' in 'nlohmann::json_abi_v3_11_3::literals::json_literals::operator ""_json'
+  
+C:\LSD\SurveyApp\json.hpp(21821,22): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(21821,22):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(12343,10):
+          while compiling class template member function 'void nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::input_stream_adapter>::parse(const bool,BasicJsonType &)'
+          with
+          [
+              BasicJsonType=nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>
+          ]
+              C:\LSD\SurveyApp\json.hpp(23529,47):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::input_stream_adapter>::parse' in 'nlohmann::json_abi_v3_11_3::operator >>'
+              C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(181,22):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::operator >>' in 'SaveSurveyToJSON'
+          C:\LSD\SurveyApp\json.hpp(12347,57):
+          see reference to class template instantiation 'nlohmann::json_abi_v3_11_3::detail::json_sax_dom_callback_parser<BasicJsonType>' being compiled
+          with
+          [
+              BasicJsonType=nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>
+          ]
+          C:\LSD\SurveyApp\json.hpp(7167,10):
+          while compiling class template member function 'bool nlohmann::json_abi_v3_11_3::detail::json_sax_dom_callback_parser<BasicJsonType>::end_object(void)'
+          with
+          [
+              BasicJsonType=nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>
+          ]
+              C:\LSD\SurveyApp\json.hpp(12455,29):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::json_sax_dom_callback_parser<BasicJsonType>::end_object' in 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::input_stream_adapter>::sax_parse_internal'
+          with
+          [
+              BasicJsonType=nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>
+          ]
+              C:\LSD\SurveyApp\json.hpp(12348,31):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::input_stream_adapter>::sax_parse_internal' in 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::input_stream_adapter>::parse'
+              C:\LSD\SurveyApp\json.hpp(23529,47):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::detail::parser<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>,nlohmann::json_abi_v3_11_3::detail::input_stream_adapter>::parse' in 'nlohmann::json_abi_v3_11_3::operator >>'
+              C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(181,22):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::operator >>' in 'SaveSurveyToJSON'
+          C:\LSD\SurveyApp\json.hpp(7194,39):
+          see reference to function template instantiation 'IteratorType nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::erase<nlohmann::json_abi_v3_11_3::detail::iter_impl<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>>,0>(IteratorType)' being compiled
+          with
+          [
+              IteratorType=nlohmann::json_abi_v3_11_3::detail::iter_impl<nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>>
+          ]
+  
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.41.34120\include\xutility(4689,18): warning C4244: '=': conversion from 'wchar_t' to 'char', possible loss of data
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.41.34120\include\xutility(4689,18):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(67,18):
+          see reference to function template instantiation 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string<std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,0>(_Iter,_Iter,const _Alloc &)' being compiled
+          with
+          [
+              _Elem=wchar_t,
+              _Iter=std::_String_iterator<std::_String_val<std::_Simple_types<wchar_t>>>,
+              _Alloc=std::allocator<char>
+          ]
+              C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(67,18):
+              see the first reference to 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>::basic_string' in 'openFile'
+          C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.41.34120\include\xstring(793,17):
+          see reference to function template instantiation 'void std::basic_string<char,std::char_traits<char>,std::allocator<char>>::_Construct_from_iter<wchar_t*,wchar_t*,_Size_type>(_Iter,const _Sent,_Size)' being compiled
+          with
+          [
+              _Size_type=unsigned __int64,
+              _Iter=wchar_t *,
+              _Sent=wchar_t *,
+              _Size=unsigned __int64
+          ]
+          C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.41.34120\include\xstring(949,18):
+          see reference to function template instantiation '_OutIt *std::_Copy_n_unchecked4<wchar_t*,_Size,char*>(_InIt,_SizeTy,_OutIt)' being compiled
+          with
+          [
+              _OutIt=char *,
+              _Size=unsigned __int64,
+              _InIt=wchar_t *,
+              _SizeTy=unsigned __int64
+          ]
+  
+C:\LSD\SurveyApp\json.hpp(22195,24): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(22195,24):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(22193,20):
+          while compiling class template member function 'nlohmann::json_abi_v3_11_3::detail::iter_impl<const nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>> nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::cend(void) noexcept const'
+              C:\LSD\SurveyApp\json.hpp(22188,9):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::cend' in 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::end'
+              C:\LSD\SurveyApp\json.hpp(4903,19):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::end' in 'nlohmann::json_abi_v3_11_3::detail::from_json_array_impl'
+  
+C:\LSD\SurveyApp\json.hpp(22170,24): warning C4459: declaration of 'result' hides global declaration
+  (compiling source file 'CreateSurveysPage.cpp')
+      C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(82,6):
+      see declaration of 'result'
+      C:\LSD\SurveyApp\json.hpp(22170,24):
+      the template instantiation context (the oldest one first) is
+          C:\LSD\SurveyApp\json.hpp(22168,20):
+          while compiling class template member function 'nlohmann::json_abi_v3_11_3::detail::iter_impl<const nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>> nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::cbegin(void) noexcept const'
+              C:\LSD\SurveyApp\json.hpp(22163,9):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::cbegin' in 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::begin'
+              C:\LSD\SurveyApp\json.hpp(4903,19):
+              see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::begin' in 'nlohmann::json_abi_v3_11_3::detail::from_json_array_impl'
+  
+  win32_directx12.vcxproj -> C:\LSD\SurveyApp\main\win32_directx12\Debug\win32_directx12.exe
