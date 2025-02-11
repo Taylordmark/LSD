@@ -6,8 +6,8 @@
 	"labels": ["Strongly Disagree","Disagree","Somewhat Disagree","Neither Agree Nor Disagree","Somewhat Agree","Agree","Strongly Agree"]
 	},
 	{
-	"id":"userDemand_19Point",
-	"count":19,
+	"id":"userDemand_9Point",
+	"count":9,
 	"labels": ["Very Low","Neutral","Very High"]
 	},
 	{

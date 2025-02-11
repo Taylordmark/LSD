@@ -386,7 +386,7 @@ void MyApp::RenderCreateSurveysPage() {
         }
 
         // Append the folder name to the surveysDirectory, replacing spaces with underscores
-        std::string folder = (testProgramName[0] == '\0') ? "program1" : testProgramName; // Use "program1" if no test program name is provided
+        std::string folder = (testProgramName[0] == '\0') ? "New Program" : testProgramName; // Use "program1" if no test program name is provided
         std::replace(folder.begin(), folder.end(), ' ', '_'); // Replace spaces with underscores
         std::string fullDirectory = surveysDirectory + folder + "/";  // Full directory path
 

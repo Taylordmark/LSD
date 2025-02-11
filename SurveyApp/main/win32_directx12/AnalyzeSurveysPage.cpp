@@ -397,7 +397,9 @@ void MyApp::RenderAnalyzeSurveysPage() {
     static int selectedMOE = 0;
     static int selectedDSP = 0;
 
-    ImGui::Text("Filter Results");
+    ImGui::Columns(2, NULL, true);
+
+    ImGui::Text("Survey Completion Filters");
     ImGui::NewLine();
     ImGui::NewLine();
 
@@ -421,7 +423,6 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
         std::cout << "Clearing stuff" << std::endl;
     }
-
 
     // First check COI. If something selected, render next, etc. Otherwise set all filters to 0
     if (selectedTestProgramIndex > 0) {
@@ -466,7 +467,19 @@ void MyApp::RenderAnalyzeSurveysPage() {
         lastDSPIndex = selectedDSP;
     }
 
+    ImGui::NextColumn();
+
+    static nlohmann::json metadata;
+
+
+    ImGui::Text("Individual Response Filters");
     ImGui::NewLine();
+    ImGui::NewLine();
+
+    ImGui::Columns(1);
+
+    ImGui::NewLine();
+
     ImGui::Separator();
 
     // Plotting Logic
@@ -580,7 +593,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 }
                 */
 
-                RenderProgressBars(filteredSurveysRemaining, filteredResponseCounts, "Survey Completion by COI",
+                RenderProgressBars(filteredSurveysRemaining, filteredResponseCounts, "Survey Completion by \n Critical Operational Issue",
                     "Total Surveys to Complete", "Surveys Administered", plotLims);                               
             }
 
@@ -694,7 +707,8 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 }
                 */
 
-                RenderProgressBars(filteredSurveysRemaining, filteredResponseCounts, "COI Completion by MOE",
+
+                RenderProgressBars(filteredSurveysRemaining, filteredResponseCounts, "Selected COI Completion by \n Measure of Effectiveness",
                     "Total Surveys to Complete", "Surveys Administered", plotLims);
             }
         }
@@ -806,7 +820,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 }
                 */
 
-                RenderProgressBars(filteredSurveysRemaining, filteredResponseCounts, "MOP Completion by DSP",
+                RenderProgressBars(filteredSurveysRemaining, filteredResponseCounts, "Selected Measure of Effectiveness \n Completion by Design Point",
                     "Total Surveys to Complete", "Surveys Administered", plotLims);
             }
         }
@@ -884,7 +898,6 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
     }
     // if no DSP is selected - plot data of selected MOP by design point
-
         
     ImPlot::DestroyContext();
 

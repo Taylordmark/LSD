@@ -45,8 +45,7 @@ static std::unordered_map<std::string, std::string> comments;
 // Used for logic checks for saving and subsequent error messages
 static std::vector<std::string> unansweredQuestions;
 
-// Set up survey questions storage to be an unordered map with MOP(N) as key,
-// MOPS = {MOP1:{metadata:{},questions:[],responseTypes:[],responses:[]},{MOP2:{}...}
+
 static nlohmann::json MOPS;
 
 // initialize metadata holder to compile from all MOPS (also hold responses)
