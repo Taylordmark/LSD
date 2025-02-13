@@ -401,7 +401,6 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
     ImGui::Text("Survey Completion Filters");
     ImGui::NewLine();
-    ImGui::NewLine();
 
     // Reset data if new test program selected
     if (lastSelectedProgramIndex != selectedTestProgramIndex) {
@@ -473,8 +472,122 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
 
     ImGui::Text("Individual Response Filters");
+    // Set up vars
+    static bool displayResponses = false;
+
+    if (ImGui::Button("Display All")) {
+        displayResponses = true;
+    }
     ImGui::NewLine();
-    ImGui::NewLine();
+    // Show all metadata stuff to filter it
+    // Get metadata options from test program folder
+    std::string metadataPath = testProgramPath + + "/" + "metadataquestions.json";
+
+    // Add metadata questions loading
+    static nlohmann::json metadataFilters;
+    nlohmann::json metadataJson;
+    std::ifstream metadataFile(metadataPath);
+
+    if (metadataFile.is_open() && metadataFilters.empty()) {
+        metadataFile >> metadataJson;
+
+        // Check if the "metadata" field exists in the JSON
+        if (metadataJson.contains("aircrew")) {
+
+            // Iterate over the keys of the "metadata" object and store them in the metadata object
+            for (const auto& item : metadataJson["aircrew"].items()) {
+                metadataFilters[item.key()] = item.value();
+            }            
+        }
+    }
+
+
+
+
+
+
+
+
+
+    // Iterate through metadata and display items with associated input boxes
+    for (auto& [metaID, metaValues] : metadataFilters.items()) {  // We now use the global 'metadata'
+
+        // Display the key above input
+        ImGui::Text("%s", metaID.c_str());
+        std::string label = "##" + metaID;
+
+        // Check if 'metaValues' has the required keys
+        if (metaValues.contains("inputType")) {
+            std::string inputTypeValue = metaValues["inputType"].get<std::string>();
+
+            // If input type is array (dropdown), handle the dropdown logic
+            if (inputTypeValue == "dropdown") {
+
+                std::vector<std::string> options = metaValues["preset"];
+                int currentSelection = -1;
+
+                // Add "No selection" as the first option in the dropdown list
+                options.insert(options.begin(), "No selection");
+
+                // Ensure the response exists and is valid for the selection
+                if (metaValues.contains("response")) {
+                    currentSelection = metaValues["response"].get<int>();
+                    if (currentSelection == -1) {
+                        // If the current selection is -1, we treat it as "No selection"
+                        currentSelection = 0;  // This corresponds to the "No selection" option
+                    }
+                }
+
+                // Create the dropdown (combo) for the current array
+                if (ImGui::BeginCombo(label.c_str(), options[currentSelection].c_str())) {  // Use the current selection for label
+
+                    // Loop through the options
+                    for (int i = 0; i < options.size(); ++i) {
+                        bool isSelected = (currentSelection == i);
+
+                        // Render the selectable item in the combo box
+                        if (ImGui::Selectable(options[i].c_str(), isSelected)) {
+                            // If "No selection" is chosen (i == 0), set response to -1
+                            if (i == 0) {
+                                metaValues["response"] = -1;  // No selection
+                            }
+                            else {
+                                // For other options, map the index correctly: subtract 1 to account for "No selection"
+                                metaValues["response"] = i;
+                            }
+                        }
+
+                        // If the item is selected, set it as the default focus
+                        if (isSelected) {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
+            }
+
+            // Check if metaValue is a string and show filled text box, if applicable
+            if (inputTypeValue == "text") {
+                std::string currentValue = metaValues["response"];
+
+                // Display the input box with the current value
+                char buf[256];
+
+                // Use strncpy_s for safer string copy
+                strncpy_s(buf, sizeof(buf), currentValue.c_str(), _TRUNCATE);  // _TRUNCATE ensures the string fits in the buffer
+
+                if (ImGui::InputText(label.c_str(), buf, sizeof(buf))) {
+                    // When the user types something, update the metadata map
+                    metaValues["response"] = std::string(buf);  // Update the response field with new text
+                }
+            }
+        }
+    }
+
+
+
+   
+    
 
     ImGui::Columns(1);
 
