@@ -323,10 +323,10 @@ void MyApp::RenderCreateSurveysPage() {
 
     float availableWidth = ImGui::GetContentRegionAvail().x;
     float availableHeight = ImGui::GetContentRegionAvail().y;
-    float childHeight = availableHeight * 0.9f;
+    float childHeight = availableHeight * 0.9f - 15.0f;
 
     static bool isFirstSave = true; // Track if it's the first save attempt
-
+    ImGui::GetStyle().FrameRounding = 5.0f;
     ImGui::NewLine();
     if (ImGui::Button("Select Surveys csv file")) {
         result = openFile();
@@ -335,9 +335,12 @@ void MyApp::RenderCreateSurveysPage() {
         needsReload = true;
     }
     ImGui::SameLine();
+    ImGui::NewLine();
+    ImGui::NewLine();
     if (ImGui::Button("Back to Home")) {
         currentPage = Page::Home;
     }
+    ImGui::GetStyle().FrameRounding = 5.0f;
     ImGui::NewLine();
 
     // Load data once

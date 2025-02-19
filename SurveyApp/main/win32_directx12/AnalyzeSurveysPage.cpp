@@ -157,14 +157,11 @@ void RenderProgressBars(const std::vector<float>& endResultData, const std::vect
     std::vector<float> modifiedCurrentProgressData = { 0.0f };
     modifiedCurrentProgressData.insert(modifiedCurrentProgressData.end(), currentProgressData.begin(), currentProgressData.end());
 
-    // Create a window to contain the plot
-    ImGui::Begin(title);
-
     // Begin the ImPlot context (for plotting)
     ImPlot::BeginPlot(title);
 
     // Set the x and y axis limits, keeping the minimum as -0.01f
-    ImPlot::SetupAxesLimits(0.5f, (plotLims[0]+1) * 1.2f, -0.1f, plotLims[1] * 1.2f);
+    ImPlot::SetupAxesLimits(0.5f, (plotLims[0]) +0.5f, -0.1f, plotLims[1] * 1.3f);
     // ImPlot::SetupAxesLimits(0.0f, 10.0f, -0.1f, 10.0f);
 
     // Plot the "end result" data as bars, with the modified data
@@ -175,7 +172,6 @@ void RenderProgressBars(const std::vector<float>& endResultData, const std::vect
 
     // End the plot and window
     ImPlot::EndPlot();
-    ImGui::End();
 }
 
 // Helper function to split a string by a delimiter
@@ -200,6 +196,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
     // initialize variable to ask for a full page refresh
     static bool pageRefresh = false;
+    ImGui::GetStyle().FrameRounding = 5.0f;
 
     // Ensure ImPlot context is available before proceeding
     ImPlot::CreateContext();
@@ -466,138 +463,11 @@ void MyApp::RenderAnalyzeSurveysPage() {
         lastDSPIndex = selectedDSP;
     }
 
-    ImGui::NextColumn();
-
-    static nlohmann::json metadata;
-
-
-    ImGui::Text("Individual Response Filters");
-    // Set up vars
-    static bool displayResponses = false;
-
-    if (ImGui::Button("Display All")) {
-        displayResponses = true;
-    }
     ImGui::NewLine();
-    // Show all metadata stuff to filter it
-    // Get metadata options from test program folder
-    std::string metadataPath = testProgramPath + + "/" + "metadataquestions.json";
-
-    // Add metadata questions loading
-    static nlohmann::json metadataFilters;
-    nlohmann::json metadataJson;
-    std::ifstream metadataFile(metadataPath);
-
-    if (metadataFile.is_open() && metadataFilters.empty()) {
-        metadataFile >> metadataJson;
-
-        // Check if the "metadata" field exists in the JSON
-        if (metadataJson.contains("aircrew")) {
-
-            // Iterate over the keys of the "metadata" object and store them in the metadata object
-            for (const auto& item : metadataJson["aircrew"].items()) {
-                metadataFilters[item.key()] = item.value();
-            }            
-        }
-    }
-
-
-
-
-
-
-
-
-
-    // Iterate through metadata and display items with associated input boxes
-    for (auto& [metaID, metaValues] : metadataFilters.items()) {  // We now use the global 'metadata'
-
-        // Display the key above input
-        ImGui::Text("%s", metaID.c_str());
-        std::string label = "##" + metaID;
-
-        // Check if 'metaValues' has the required keys
-        if (metaValues.contains("inputType")) {
-            std::string inputTypeValue = metaValues["inputType"].get<std::string>();
-
-            // If input type is array (dropdown), handle the dropdown logic
-            if (inputTypeValue == "dropdown") {
-
-                std::vector<std::string> options = metaValues["preset"];
-                int currentSelection = -1;
-
-                // Add "No selection" as the first option in the dropdown list
-                options.insert(options.begin(), "No selection");
-
-                // Ensure the response exists and is valid for the selection
-                if (metaValues.contains("response")) {
-                    currentSelection = metaValues["response"].get<int>();
-                    if (currentSelection == -1) {
-                        // If the current selection is -1, we treat it as "No selection"
-                        currentSelection = 0;  // This corresponds to the "No selection" option
-                    }
-                }
-
-                // Create the dropdown (combo) for the current array
-                if (ImGui::BeginCombo(label.c_str(), options[currentSelection].c_str())) {  // Use the current selection for label
-
-                    // Loop through the options
-                    for (int i = 0; i < options.size(); ++i) {
-                        bool isSelected = (currentSelection == i);
-
-                        // Render the selectable item in the combo box
-                        if (ImGui::Selectable(options[i].c_str(), isSelected)) {
-                            // If "No selection" is chosen (i == 0), set response to -1
-                            if (i == 0) {
-                                metaValues["response"] = -1;  // No selection
-                            }
-                            else {
-                                // For other options, map the index correctly: subtract 1 to account for "No selection"
-                                metaValues["response"] = i;
-                            }
-                        }
-
-                        // If the item is selected, set it as the default focus
-                        if (isSelected) {
-                            ImGui::SetItemDefaultFocus();
-                        }
-                    }
-                    ImGui::EndCombo();
-                }
-            }
-
-            // Check if metaValue is a string and show filled text box, if applicable
-            if (inputTypeValue == "text") {
-                std::string currentValue = metaValues["response"];
-
-                // Display the input box with the current value
-                char buf[256];
-
-                // Use strncpy_s for safer string copy
-                strncpy_s(buf, sizeof(buf), currentValue.c_str(), _TRUNCATE);  // _TRUNCATE ensures the string fits in the buffer
-
-                if (ImGui::InputText(label.c_str(), buf, sizeof(buf))) {
-                    // When the user types something, update the metadata map
-                    metaValues["response"] = std::string(buf);  // Update the response field with new text
-                }
-            }
-        }
-    }
-
-
-
-   
-    
-
-    ImGui::Columns(1);
-
+    ImGui::NewLine();
     ImGui::NewLine();
 
-    ImGui::Separator();
-
-    // Plotting Logic
-    // Use COI, MOE, DSPS values to filter
-
+    ImGui::BeginChild("Survey Statistics");
     // If test events is filled and Test Program is selected, run plot logic
     if (!allTestEvents.empty() && selectedTestProgramIndex != 0) {
 
@@ -693,21 +563,19 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 std::vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
 
                 /*
-                // Print the full dataset of filteredResponseCounts
                 std::cout << "Full dataset in filteredSurveyCounts: " << std::endl;
                 for (size_t i = 0; i < filteredSurveyCounts.size(); ++i) {
                     std::cout << "Index " << i << ": " << filteredSurveyCounts[i] << std::endl;
                 }
-
-                // Print the full dataset of filteredResponseCounts
                 std::cout << "Full dataset in filteredResponseCounts: " << std::endl;
                 for (size_t i = 0; i < filteredResponseCounts.size(); ++i) {
                     std::cout << "Index " << i << ": " << filteredResponseCounts[i] << std::endl;
                 }
                 */
 
-                RenderProgressBars(filteredSurveysRemaining, filteredResponseCounts, "Survey Completion by \n Critical Operational Issue",
-                    "Total Surveys to Complete", "Surveys Administered", plotLims);                               
+                // Changed back to filtered survey counts
+                RenderProgressBars(filteredSurveyCounts, filteredResponseCounts, "Survey Completion by \n Critical Operational Issue",
+                    "Total Surveys to Complete", "Surveys Administered", plotLims);
             }
 
         }
@@ -821,7 +689,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 */
 
 
-                RenderProgressBars(filteredSurveysRemaining, filteredResponseCounts, "Selected COI Completion by \n Measure of Effectiveness",
+                RenderProgressBars(filteredSurveyCounts, filteredResponseCounts, "Selected COI Completion by \n Measure of Effectiveness",
                     "Total Surveys to Complete", "Surveys Administered", plotLims);
             }
         }
@@ -933,7 +801,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 }
                 */
 
-                RenderProgressBars(filteredSurveysRemaining, filteredResponseCounts, "Selected Measure of Effectiveness \n Completion by Design Point",
+                RenderProgressBars(filteredSurveyCounts, filteredResponseCounts, "Selected Measure of Effectiveness \n Completion by Design Point",
                     "Total Surveys to Complete", "Surveys Administered", plotLims);
             }
         }
@@ -946,7 +814,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 std::vector<std::string> MOEMap = dataMap[std::to_string(selectedCOI)][std::to_string(selectedMOE)];
                 const int MOEMapSize = MOEMap.size();
                 for (const auto& DSP : MOEMap) {
-                    
+
                     // Add response counts to the responses counter vector
                     for (const auto& event : respondedEvents) {
                         // Split the event string by underscores
@@ -1005,12 +873,256 @@ void MyApp::RenderAnalyzeSurveysPage() {
             }
 
             if (!filteredSurveyCounts.empty()) {
-
+                // NOTHING HERE... CHANGE TO...?
             }
         }
 
     }
-    // if no DSP is selected - plot data of selected MOP by design point
+    ImGui::EndChild();
+
+
+
+    
+    ImGui::NextColumn();
+    // Now all the metadata filters
+
+
+    static nlohmann::json metadata;
+    ImGui::Text("Individual Response Filters");
+    // Set up vars
+    static bool displayResponses = false;
+    
+    ImGui::NewLine();
+    // Show all metadata stuff to filter it
+    // Get metadata options from test program folder
+    std::string metadataPath = testProgramPath + + "/" + "metadataquestions.json";
+
+    // Add metadata questions loading
+    static nlohmann::json metadataFilters;
+    nlohmann::json metadataJson;
+    std::ifstream metadataFile(metadataPath);
+
+    if (metadataFile.is_open() && metadataFilters.empty()) {
+        metadataFile >> metadataJson;
+
+        // Check if the "metadata" field exists in the JSON
+        if (metadataJson.contains("aircrew")) {
+
+            // Iterate over the keys of the "metadata" object and store them in the metadata object
+            for (const auto& item : metadataJson["aircrew"].items()) {
+                metadataFilters[item.key()] = item.value();
+            }            
+        }
+    }
+
+    // Display metadata filters
+    for (auto& [metaID, metaValues] : metadataFilters.items()) {  // We now use the global 'metadata'
+
+        // Display the key above input
+        ImGui::Text("%s", metaID.c_str());
+        std::string label = "##" + metaID;
+
+        // Check if 'metaValues' has the required keys
+        if (metaValues.contains("inputType")) {
+            std::string inputTypeValue = metaValues["inputType"].get<std::string>();
+
+            // If input type is array (dropdown), handle the dropdown logic
+            if (inputTypeValue == "dropdown") {
+
+                std::vector<std::string> options = metaValues["preset"];
+                int currentSelection = -1;
+
+                // Add "No selection" as the first option in the dropdown list
+                options.insert(options.begin(), "No selection");
+
+                // Ensure the response exists and is valid for the selection
+                if (metaValues.contains("response")) {
+                    currentSelection = metaValues["response"].get<int>();
+                    if (currentSelection == -1) {
+                        // If the current selection is -1, we treat it as "No selection"
+                        currentSelection = 0;  // This corresponds to the "No selection" option
+                    }
+                }
+
+                // Create the dropdown (combo) for the current array
+                if (ImGui::BeginCombo(label.c_str(), options[currentSelection].c_str())) {  // Use the current selection for label
+
+                    // Loop through the options
+                    for (int i = 0; i < options.size(); ++i) {
+                        bool isSelected = (currentSelection == i);
+
+                        // Render the selectable item in the combo box
+                        if (ImGui::Selectable(options[i].c_str(), isSelected)) {
+                            // If "No selection" is chosen (i == 0), set response to -1
+                            if (i == 0) {
+                                metaValues["response"] = -1;  // No selection
+                            }
+                            else {
+                                // For other options, map the index correctly: subtract 1 to account for "No selection"
+                                metaValues["response"] = i;
+                            }
+                        }
+
+                        // If the item is selected, set it as the default focus
+                        if (isSelected) {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
+            }
+
+            // If input type is a string and show filled text box, if applicable
+            if (inputTypeValue == "text") {
+                std::string currentValue = metaValues["response"];
+
+                // Display the input box with the current value
+                char buf[256];
+
+                // Use strncpy_s for safer string copy
+                strncpy_s(buf, sizeof(buf), currentValue.c_str(), _TRUNCATE);  // _TRUNCATE ensures the string fits in the buffer
+
+                if (ImGui::InputText(label.c_str(), buf, sizeof(buf))) {
+                    // When the user types something, update the metadata map
+                    metaValues["response"] = std::string(buf);  // Update the response field with new text
+                }
+            }
+
+            // If input type is "time" show two input boxes, one for min and one for max
+            if (inputTypeValue == "time") {
+                std::string currentValue = metaValues["response"];
+
+                // Split the currentValue into min and max if they exist, otherwise use empty strings
+                std::string minValue, maxValue;
+                size_t commaPos = currentValue.find(",");
+                if (commaPos != std::string::npos) {
+                    minValue = currentValue.substr(0, commaPos);
+                    maxValue = currentValue.substr(commaPos + 1);
+                }
+                else {
+                    minValue = currentValue;  // If no comma, the whole value is for "Min"
+                }
+
+                // Create buffers for both Min and Max input
+                char minBuf[256];
+                char maxBuf[256];
+
+                // Use strncpy_s for safer string copy
+                strncpy_s(minBuf, sizeof(minBuf), minValue.c_str(), _TRUNCATE);  // _TRUNCATE ensures the string fits in the buffer
+                strncpy_s(maxBuf, sizeof(maxBuf), maxValue.c_str(), _TRUNCATE);  // _TRUNCATE ensures the string fits in the buffer
+
+                // Create Min and Max labels with the original label (metaID)
+                std::string minLabel = "Min##" + metaID;  // "Min##(original label)"
+                std::string maxLabel = "Max##" + metaID;  // "Max##(original label)"
+
+                // Set the width for the input boxes
+                float inputWidth = 100.0f;  // Change this value to adjust the width of the input boxes
+
+                // Set the width of the input boxes
+                ImGui::PushItemWidth(inputWidth);
+
+                // Display the Min input box
+                if (ImGui::InputText(minLabel.c_str(), minBuf, sizeof(minBuf))) {
+                    // When the user types something in the Min box, update the metadata map
+                    minValue = std::string(minBuf);  // Update Min value
+                }
+                ImGui::SameLine();
+                ImGui::Text("   ");
+                ImGui::SameLine();
+                // Display the Max input box
+                if (ImGui::InputText(maxLabel.c_str(), maxBuf, sizeof(maxBuf))) {
+                    // When the user types something in the Max box, update the metadata map
+                    maxValue = std::string(maxBuf);  // Update Max value
+                }
+
+                // Reset the width back to the default
+                ImGui::PopItemWidth();
+
+                // Combine the Min and Max values into one string, separated by a comma
+                metaValues["response"] = minValue + "," + maxValue;  // Store the result in the response field
+            }
+        }
+    }    
+
+    ImGui::NewLine();
+    ImGui::NewLine();
+
+    static bool displayError = false;
+
+    if (selectedTestProgramIndex > 0) {
+        if (ImGui::Button("Display All")) {
+            // Check if COI and MOE are selected properly
+            if (selectedCOI > 0 && selectedMOE > 0) displayResponses = true;            
+            else displayError = true;
+        }
+    }
+
+    if (displayError) {
+        ImGui::NewLine();
+        ImGui::Text("Looks like you haven't set all of the COI/MOE filters. \nAre you sure you want to create a bunch of plots?");
+
+        // Buttons for handling user decision
+        if (ImGui::Button("Yes, I'm sure")) { displayResponses = true; displayError = false; }
+        ImGui::SameLine();
+        if (ImGui::Button("Nope, sounds like a bad idea")) { displayResponses = false; displayError = false; }
+    }
+
+
+    ImGui::Columns(1);
+
+    // string to store response filename, bool to store whether the response meets the metadata requirements
+    static std::vector<std::pair<std::string, bool>> surveyResponses;
+
+    // If empty, fill it
+    if (surveyResponses.empty()) {
+        // Iterate through all of the folders in responsesPath / selectedTestProgram
+        fs::path programFolder = fs::path(responsesPath) / selectedTestProgram;
+
+        // Make sure the directory exists
+        if (fs::exists(programFolder) && fs::is_directory(programFolder)) {
+            // Iterate through all subdirectories (e.g., V_2_2_02_4)
+            for (const auto& dirEntry : fs::directory_iterator(programFolder)) {
+                if (fs::is_directory(dirEntry)) {
+                    fs::path subFolder = dirEntry.path();
+
+                    // Iterate through all of the files in the subfolder (e.g., .json files)
+                    for (const auto& fileEntry : fs::directory_iterator(subFolder)) {
+                        if (fs::is_regular_file(fileEntry) && fileEntry.path().extension() == ".json") {
+                            // Get the relative folder/filename string
+                            std::string relativePath = subFolder.filename().string() + "/" + fileEntry.path().filename().string();
+
+                            // Check metadata or any condition, here I'm using a placeholder boolean check
+                            bool meetsMetadata = false;  // Add your metadata-check logic here
+
+                            // Add the relative folder/filename string to the surveyResponses vector with a bool value (either true or false)
+                            surveyResponses.push_back(std::make_pair(relativePath, meetsMetadata));
+
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            std::cerr << "Directory does not exist: " << programFolder << std::endl;
+        }
+    }
+
+    // If displayResponses == true then plot all of the responses filtered by COI, MOE, all metadata filters, grouped by Design Point
+    
+
+    // first get the file paths of all responses
+
+    // for each COI, MOE, design point combination (hopefully coi and moe will be filtered)
+
+        // for each file path, check if conditions are met
+
+        // for each where conditions are met, plot each MOPs results in a new plot
+
+
+
+
+    ImGui::NewLine();
+    
         
     ImPlot::DestroyContext();
 

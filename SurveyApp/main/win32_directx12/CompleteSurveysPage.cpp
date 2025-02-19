@@ -286,7 +286,7 @@ void RenderSurveys() {
     ImGui::NewLine();
 
     // Iterate through metadata and display items with associated input boxes
-    for (auto& [metaID, metaValues] : metadata.items()) {  // We now use the global 'metadata'
+    for (auto& [metaID, metaValues] : metadata.items()) {
 
         // Display the key above input
         ImGui::Text("%s", metaID.c_str());
@@ -329,7 +329,7 @@ void RenderSurveys() {
             }
 
             // Check if metaValue is a string and show filled text box, if applicable
-            if (inputTypeValue == "text") {
+            if (inputTypeValue == "text" or inputTypeValue == "time") {
                 std::string currentValue = metaValues["response"];
 
                 // Display the input box with the current value
@@ -556,6 +556,8 @@ void MyApp::RenderCompleteSurveysPage() {
         testProgramPath = baseDirectory + selectedTestProgram;
         testEvents = GetFolderNames(testProgramPath);
     }
+
+    ImGui::GetStyle().FrameRounding = 5.0f;
 
     char eventFilter[10] = "";
     ImGui::Text("Event Filter");
