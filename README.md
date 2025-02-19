@@ -42,5 +42,6 @@ Updated version of app is available as an .exe file after running at ""C:\LSD\Su
   - Add sentiment analysis of surveys using hugging face pretrained model to **Analyze Surveys**
   - Make app look nicer with better fonts, color themes
   - Add data connection to Envision to get flight data for **Complete Surveys** page
+  - Add an "export to csv" button on the analysis page
   
   
