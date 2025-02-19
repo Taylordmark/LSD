@@ -11,12 +11,12 @@
       "response": 0
     },
     "Takeoff Time": {
-      "inputType": "text",
+      "inputType": "time",
       "preset": "",
       "response": ""
     },
     "Land Time": {
-      "inputType": "text",
+      "inputType": "time",
       "preset": "",
       "response": ""
     },

@@ -67,12 +67,18 @@
         }
     },
     "questions": [
-        "How well did T7 system 2 perform during maneuver B?"
+        "How well did T7 system 2 perform during maneuver B?",
+        "Did you enjoy the event?",
+        "How likely are you to do the event again?"
     ],
     "responseTypes": [
-        "acceptability_5Point_NA"
+        "acceptability_5Point_NA",
+        "agreement_5Point",
+        "lowMedHigh_5Point"
     ],
     "responses": [
+        null,
+        null,
         null
     ]
 }
