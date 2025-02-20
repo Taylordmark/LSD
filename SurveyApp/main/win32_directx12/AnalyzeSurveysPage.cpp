@@ -106,11 +106,14 @@ int RenderDropdown(const std::vector<std::string>& foldersSet, const std::string
 // Function to count the number of files in a folder
 int CountFilesInFolder(const std::string& folderPath) {
     int count = 0;
+    
     for (const auto& entry : fs::directory_iterator(folderPath)) {
         if (entry.is_regular_file()) {
             ++count;
         }
+        else { std::cout << entry << " Not regular file" << std::endl; }
     }
+    
     return count;
 }
 
@@ -255,7 +258,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
     
     // Set test program path using Dropdown value
     std::string testProgramPath = testProgramsPath + "/" + selectedTestProgram;
-    std::string testResponsesPath = responsesPath + "/" + selectedTestProgram;
+    std::string testResponsePath = responsesPath + "/" + selectedTestProgram;
 
     // If test events have not been loaded and a test program is selected, load test events from TestProgram/Program path
     if ((allTestEvents.empty() or pageRefresh or respondedEvents.empty()) && selectedTestProgramIndex > 0) {
@@ -327,14 +330,14 @@ void MyApp::RenderAnalyzeSurveysPage() {
             }
         }
 
-        respondedEvents = GetSurveyFolders(testResponsesPath);
+        respondedEvents = GetSurveyFolders(testResponsePath);
 
         COIResponseCounts.clear();
 
         for (const auto& event : respondedEvents) {
 
             // Count the number of files in the event's folder
-            std::string eventFolderPath = testResponsesPath + "/" + event;
+            std::string eventFolderPath = testResponsePath + "/" + event;
             int fileCount = CountFilesInFolder(eventFolderPath);
 
             // Get the second character of the event value
@@ -475,19 +478,26 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
         // if no COI is selected - get all data by COI and plot
         if (selectedCOI == 0) {
+
+            // Fill data
             if (filteredSurveyCounts.empty()) {
                 // Fill filteredSurveyCounts with data by COI
                 const int dataMapSize = static_cast<int>(dataMap.size());
+                
+                // Iterate through COIs
                 for (const auto& COIpair : dataMap) {
                     auto COI = COIpair.first;
 
-                    // Fill filteredSurveyCounts
+                    // Iterate through test events
                     for (const auto& event : allTestEvents) {
-                        // Split the event string by underscores
+                        // Split the event string by underscores to get coi data etc
                         std::vector<std::string> parts = SplitStringByDelimiter(event, '_');
 
-                        // If event is a part of COI add last part of folder name to counter for COI index
+                        // If test event is part of current COI iteration
                         if (parts.size() > 1 && parts[1] == COI) {
+
+                            std::string sPath = testProgramPath + "/" + event + "/";
+                            int mopcount = CountFilesInFolder(sPath);
                             int index = (std::stoi(parts[1]) - 1); // Get the index from the last part of the string
                             float valueToAdd = std::stof(parts.back()); // Convert the last part to integer (for the value)
 
@@ -495,13 +505,13 @@ void MyApp::RenderAnalyzeSurveysPage() {
                             if (index >= filteredSurveyCounts.size()) {
                                 filteredSurveyCounts.resize(index + 1, 0); // Resize and initialize new elements to 0
                             }
-
-                            filteredSurveyCounts[index] += valueToAdd;  // Add the value to the appropriate index
+                            filteredSurveyCounts[index] += valueToAdd * mopcount;  // Add the value to the appropriate index
                         }
                     }
 
-                    // Fill filteredResponseCounts
+                    // Iterate through responses
                     for (const auto& event : respondedEvents) {
+                        std::cout << "Event :" << event << std::endl;
                         // Split the event string by underscores
                         std::vector<std::string> parts = SplitStringByDelimiter(event, '_');
 
@@ -509,40 +519,13 @@ void MyApp::RenderAnalyzeSurveysPage() {
                         if (parts.size() > 1 && parts[1] == COI) {
                             int index = (std::stoi(parts[1]) - 1);  // Get the index from the second part of the string (assuming index is at parts[1])
 
-                            // Value to add = # files in event folder / highest MOP value in the file titles
-                            // testResponsesPath + event is the folder containing JSON files with titles like MPX_ABC_...json
-
-                            // Iterate through files in the directory and get unique MOP values
-                            std::set<float> mopSet;
-
-                            // Fill mopSet with unique mop values from the specific test event folder
-                            for (const auto& entry : fs::directory_iterator(testResponsesPath)) {
-                                if (entry.is_regular_file() && entry.path().extension() == ".json") {
-                                    // Extract the MOP value from the filename using a regex
-                                    std::string filename = entry.path().filename().string();
-                                    std::regex mopRegex("MOP(\\d+)");  // Regex to find MOPX where X is a number
-
-                                    std::smatch match;
-                                    if (std::regex_search(filename, match, mopRegex) && match.size() > 1) {
-                                        // Convert the extracted MOP value to an integer
-                                        int mopValue = std::stof(match.str(1));  // match.str(1) is the number part after "MOP"
-                                        mopSet.insert(mopValue);
-                                    }
-                                }
-                            }
-
-                            //Get set size
-                            float mopSetSize = std::max(static_cast<float>(mopSet.size()), 1.0f);
-
-                            // Now calculate the value to add: # files / highest MOP value
-                            int numFiles = std::distance(fs::directory_iterator(testResponsesPath), fs::directory_iterator{});
-                            float valueToAdd = static_cast<float>(numFiles) / mopSetSize;
+                            std::string rPath = testProgramPath + "/" + event + "/";                                                       
+                            int valueToAdd = CountFilesInFolder(rPath);
 
                             // Ensure filteredResponseCounts has enough space
                             if (index >= filteredResponseCounts.size()) {
                                 filteredResponseCounts.resize(index + 1, 0);  // Resize and initialize new elements to 0
                             }
-
                             filteredResponseCounts[index] += valueToAdd;  // Add the value to the appropriate index
                         }
                     }
@@ -557,24 +540,14 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 }
             }
 
+            // Plot data
             if (!filteredSurveyCounts.empty()) {
                 // Get y lim
                 float max_survey_value = *std::max_element(filteredSurveyCounts.begin(), filteredSurveyCounts.end());
 
                 // Set plotLims with max values
                 std::vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
-
-                /*
-                std::cout << "Full dataset in filteredSurveyCounts: " << std::endl;
-                for (size_t i = 0; i < filteredSurveyCounts.size(); ++i) {
-                    std::cout << "Index " << i << ": " << filteredSurveyCounts[i] << std::endl;
-                }
-                std::cout << "Full dataset in filteredResponseCounts: " << std::endl;
-                for (size_t i = 0; i < filteredResponseCounts.size(); ++i) {
-                    std::cout << "Index " << i << ": " << filteredResponseCounts[i] << std::endl;
-                }
-                */
-
+                                
                 // Changed back to filtered survey counts
                 RenderProgressBars(filteredSurveyCounts, filteredResponseCounts, "Survey Completion by \n Critical Operational Issue",
                     "Total Surveys to Complete", "Surveys Administered", plotLims);
@@ -598,17 +571,18 @@ void MyApp::RenderAnalyzeSurveysPage() {
                         // Split the event string by underscores
                         std::vector<std::string> parts = SplitStringByDelimiter(event, '_');
 
-                        // If event is a part of selected COI and current MOE (of loop) add last part of folder name to counter for COI index
+                        // If test event is part of selected COI and current MOE iteration
                         if (parts.size() > 2 && parts[1] == std::to_string(selectedCOI) && parts[2] == MOE) {
-                            int index = (std::stoi(parts[2]) - 1); // Get the MOE index
-                            float valueToAdd = std::stoi(parts.back()); // Convert the last part to integer (for the value)
+                            std::string sPath = testProgramPath + "/" + event + "/";
+                            int mopcount = CountFilesInFolder(sPath);
+                            int index = (std::stoi(parts[1]) - 1); // Get the index from the last part of the string
+                            float valueToAdd = std::stof(parts.back()); // Convert the last part to integer (for the value)
 
                             // Ensure filteredSurveyCounts has enough space
                             if (index >= filteredSurveyCounts.size()) {
                                 filteredSurveyCounts.resize(index + 1, 0); // Resize and initialize new elements to 0
                             }
-
-                            filteredSurveyCounts[index] += valueToAdd;  // Add the value to the appropriate index                               
+                            filteredSurveyCounts[index] += valueToAdd * mopcount;  // Add the value to the appropriate index                          
                         }
                     }
 
@@ -619,43 +593,15 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
                         // If response is a part of MOE, add number of responses
                         if (parts.size() > 2 && parts[1] == std::to_string(selectedCOI) && parts[2] == MOE) {
-                            // MOE index from second part
-                            int index = (std::stoi(parts[2]) - 1);
+                            int index = (std::stoi(parts[1]) - 1);  // Get the index from the second part of the string (assuming index is at parts[1])
 
-                            // Value to add = # files in event folder / highest MOP value in the file titles
-                            // testResponsesPath + event is the folder containing JSON files with titles like MOPX_ABC_...json
-
-                            // Iterate through files in the directory and get unique MOP values
-                            std::set<float> mopSet;
-
-                            // Fill mopSet with unique mop values from the specific test event folder
-                            for (const auto& entry : fs::directory_iterator(testResponsesPath)) {
-                                if (entry.is_regular_file() && entry.path().extension() == ".json") {
-                                    // Extract the MOP value from the filename using a regex
-                                    std::string filename = entry.path().filename().string();
-                                    std::regex mopRegex("MOP(\\d+)");  // Regex to find MOPX where X is a number
-
-                                    std::smatch match;
-                                    if (std::regex_search(filename, match, mopRegex) && match.size() > 1) {
-                                        // Convert the extracted MOP value to an integer
-                                        float mopValue = std::stof(match.str(1));  // match.str(1) is the number part after "MOP"
-                                        mopSet.insert(mopValue);
-                                    }
-                                }
-                            }
-
-                            //Get set size
-                            float mopSetSize = std::max(static_cast<float>(mopSet.size()), 1.0f);
-
-                            // Now calculate the value to add: # files / highest MOP value
-                            __int64 numFiles = std::distance(fs::directory_iterator(testResponsesPath), fs::directory_iterator{});
-                            float valueToAdd = static_cast<float>(numFiles) / mopSetSize;
+                            std::string rPath = testProgramPath + "/" + event + "/";
+                            int valueToAdd = CountFilesInFolder(rPath);
 
                             // Ensure filteredResponseCounts has enough space
                             if (index >= filteredResponseCounts.size()) {
                                 filteredResponseCounts.resize(index + 1, 0);  // Resize and initialize new elements to 0
                             }
-
                             filteredResponseCounts[index] += valueToAdd;  // Add the value to the appropriate index
                         }
                     }
@@ -675,21 +621,6 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
                 // Set plotLims with max values
                 std::vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
-
-                /*
-                // Print the full dataset of filteredResponseCounts
-                std::cout << "Full dataset in filteredSurveyCounts: " << std::endl;
-                for (size_t i = 0; i < filteredSurveyCounts.size(); ++i) {
-                    std::cout << "Index " << i << ": " << filteredSurveyCounts[i] << std::endl;
-                }
-
-                // Print the full dataset of filteredResponseCounts
-                std::cout << "Full dataset in filteredResponseCounts: " << std::endl;
-                for (size_t i = 0; i < filteredResponseCounts.size(); ++i) {
-                    std::cout << "Index " << i << ": " << filteredResponseCounts[i] << std::endl;
-                }
-                */
-
 
                 RenderProgressBars(filteredSurveyCounts, filteredResponseCounts, "Selected COI Completion by \n Measure of Effectiveness",
                     "Total Surveys to Complete", "Surveys Administered", plotLims);
@@ -736,13 +667,13 @@ void MyApp::RenderAnalyzeSurveysPage() {
                             int index = (std::stoi(parts[3]) - 1);
 
                             // Value to add = # files in event folder / highest MOP value in the file titles
-                            // testResponsesPath + event is the folder containing JSON files with titles like MOPX_ABC_...json
+                            // testResponsePath + event is the folder containing JSON files with titles like MOPX_ABC_...json
 
                             // Iterate through files in the directory and get unique MOP values
                             std::set<float> mopSet;
 
                             // Fill mopSet with unique mop values from the specific test event folder
-                            for (const auto& entry : fs::directory_iterator(testResponsesPath)) {
+                            for (const auto& entry : fs::directory_iterator(testResponsePath)) {
                                 if (entry.is_regular_file() && entry.path().extension() == ".json") {
                                     // Extract the MOP value from the filename using a regex
                                     std::string filename = entry.path().filename().string();
@@ -761,7 +692,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                             float mopSetSize = std::max(static_cast<float>(mopSet.size()), 1.0f);
 
                             // Now calculate the value to add: # files / highest MOP value
-                            int numFiles = std::distance(fs::directory_iterator(testResponsesPath), fs::directory_iterator{});
+                            int numFiles = std::distance(fs::directory_iterator(testResponsePath), fs::directory_iterator{});
                             float valueToAdd = static_cast<float>(numFiles) / mopSetSize;
 
                             // Ensure filteredResponseCounts has enough space
@@ -789,20 +720,6 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 // Set plotLims with max values
                 std::vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
 
-                /*
-                // Print the full dataset of filteredResponseCounts
-                std::cout << "Full dataset in filteredSurveyCounts: " << std::endl;
-                for (size_t i = 0; i < filteredSurveyCounts.size(); ++i) {
-                    std::cout << "Index " << i << ": " << filteredSurveyCounts[i] << std::endl;
-                }
-
-                // Print the full dataset of filteredResponseCounts
-                std::cout << "Full dataset in filteredResponseCounts: " << std::endl;
-                for (size_t i = 0; i < filteredResponseCounts.size(); ++i) {
-                    std::cout << "Index " << i << ": " << filteredResponseCounts[i] << std::endl;
-                }
-                */
-
                 RenderProgressBars(filteredSurveyCounts, filteredResponseCounts, "Selected Measure of Effectiveness \n Completion by Design Point",
                     "Total Surveys to Complete", "Surveys Administered", plotLims);
             }
@@ -828,11 +745,11 @@ void MyApp::RenderAnalyzeSurveysPage() {
                             int index = (std::stoi(parts[3]) - 1);
 
                             // Value to add = # files in event folder / highest MOP value in the file titles
-                            // testResponsesPath + event is the folder containing JSON files with titles like MOPX_ABC_...json
+                            // testResponsePath + event is the folder containing JSON files with titles like MOPX_ABC_...json
 
                             // Iterate through files in the directory and extract the highest MOP value
                             float highestMOP = 0.0f;
-                            for (const auto& entry : fs::directory_iterator(testResponsesPath)) {
+                            for (const auto& entry : fs::directory_iterator(testResponsePath)) {
                                 if (entry.is_regular_file() && entry.path().extension() == ".json") {
                                     // Extract the MOP value from the filename using a regex
                                     std::string filename = entry.path().filename().string();
@@ -853,7 +770,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                             }
 
                             // Now calculate the value to add: # files / highest MOP value
-                            int numFiles = std::distance(fs::directory_iterator(testResponsesPath), fs::directory_iterator{});
+                            int numFiles = std::distance(fs::directory_iterator(testResponsePath), fs::directory_iterator{});
                             float valueToAdd = static_cast<float>(numFiles) / highestMOP;
 
                             // Ensure filteredResponseCounts has enough space
@@ -879,6 +796,16 @@ void MyApp::RenderAnalyzeSurveysPage() {
             }
         }
 
+        /*
+        std::cout << "Full dataset in filteredSurveyCounts: " << std::endl;
+        for (size_t i = 0; i < filteredSurveyCounts.size(); ++i) {
+            std::cout << "Index " << i << ": " << filteredSurveyCounts[i] << std::endl;
+        }
+        std::cout << "Full dataset in filteredResponseCounts: " << std::endl;
+        for (size_t i = 0; i < filteredResponseCounts.size(); ++i) {
+            std::cout << "Index " << i << ": " << filteredResponseCounts[i] << std::endl;
+        }
+        */
     }
     ImGui::EndChild();
 
