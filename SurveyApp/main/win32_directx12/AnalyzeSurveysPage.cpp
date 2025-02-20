@@ -575,7 +575,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                         if (parts.size() > 2 && parts[1] == std::to_string(selectedCOI) && parts[2] == MOE) {
                             std::string sPath = testProgramPath + "/" + event + "/";
                             int mopcount = CountFilesInFolder(sPath);
-                            int index = (std::stoi(parts[1]) - 1); // Get the index from the last part of the string
+                            int index = (std::stoi(parts[2]) - 1); // Get the index from the third part of the string
                             float valueToAdd = std::stof(parts.back()); // Convert the last part to integer (for the value)
 
                             // Ensure filteredSurveyCounts has enough space
@@ -593,8 +593,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
                         // If response is a part of MOE, add number of responses
                         if (parts.size() > 2 && parts[1] == std::to_string(selectedCOI) && parts[2] == MOE) {
-                            int index = (std::stoi(parts[1]) - 1);  // Get the index from the second part of the string (assuming index is at parts[1])
-
+                            int index = (std::stoi(parts[2]) - 1);  // Get the index from the third part of the string                            
                             std::string rPath = testProgramPath + "/" + event + "/";
                             int valueToAdd = CountFilesInFolder(rPath);
 
@@ -645,14 +644,15 @@ void MyApp::RenderAnalyzeSurveysPage() {
                         // If event is a part of selected COI and selected MOP and DSP (of loop) add last part of folder name to counter for DSP index
                         if (parts.size() > 3 && parts[1] == std::to_string(selectedCOI) && parts[2] == std::to_string(selectedMOE) && parts[3] == DSP) {
                             int index = (std::stoi(parts[3]) - 1); // Get the DSP index
-                            float valueToAdd = std::stoi(parts.back()); // Convert the last part to integer (for the value)
+                            std::string sPath = testProgramPath + "/" + event + "/";
+                            int mopcount = CountFilesInFolder(sPath);
+                            float valueToAdd = std::stof(parts.back()); // Convert the last part to integer (for the value)
 
                             // Ensure filteredSurveyCounts has enough space
                             if (index >= filteredSurveyCounts.size()) {
                                 filteredSurveyCounts.resize(index + 1, 0); // Resize and initialize new elements to 0
                             }
-
-                            filteredSurveyCounts[index] += valueToAdd;  // Add the value to the appropriate index                               
+                            filteredSurveyCounts[index] += valueToAdd * mopcount;  // Add the value to the appropriate index
                         }
                     }
 
@@ -665,41 +665,13 @@ void MyApp::RenderAnalyzeSurveysPage() {
                         if (parts.size() > 3 && parts[1] == std::to_string(selectedCOI) && parts[2] == std::to_string(selectedMOE) && parts[3] == DSP) {
                             // DSP index from third part
                             int index = (std::stoi(parts[3]) - 1);
-
-                            // Value to add = # files in event folder / highest MOP value in the file titles
-                            // testResponsePath + event is the folder containing JSON files with titles like MOPX_ABC_...json
-
-                            // Iterate through files in the directory and get unique MOP values
-                            std::set<float> mopSet;
-
-                            // Fill mopSet with unique mop values from the specific test event folder
-                            for (const auto& entry : fs::directory_iterator(testResponsePath)) {
-                                if (entry.is_regular_file() && entry.path().extension() == ".json") {
-                                    // Extract the MOP value from the filename using a regex
-                                    std::string filename = entry.path().filename().string();
-                                    std::regex mopRegex("MOP(\\d+)");  // Regex to find MOPX where X is a number
-
-                                    std::smatch match;
-                                    if (std::regex_search(filename, match, mopRegex) && match.size() > 1) {
-                                        // Convert the extracted MOP value to an integer
-                                        int mopValue = std::stoi(match.str(1));  // match.str(1) is the number part after "MOP"
-                                        mopSet.insert(mopValue);
-                                    }
-                                }
-                            }
-
-                            //Get set size
-                            float mopSetSize = std::max(static_cast<float>(mopSet.size()), 1.0f);
-
-                            // Now calculate the value to add: # files / highest MOP value
-                            int numFiles = std::distance(fs::directory_iterator(testResponsePath), fs::directory_iterator{});
-                            float valueToAdd = static_cast<float>(numFiles) / mopSetSize;
+                            std::string rPath = testProgramPath + "/" + event + "/";
+                            int valueToAdd = CountFilesInFolder(rPath);
 
                             // Ensure filteredResponseCounts has enough space
                             if (index >= filteredResponseCounts.size()) {
                                 filteredResponseCounts.resize(index + 1, 0);  // Resize and initialize new elements to 0
                             }
-
                             filteredResponseCounts[index] += valueToAdd;  // Add the value to the appropriate index
                         }
                     }
@@ -743,41 +715,13 @@ void MyApp::RenderAnalyzeSurveysPage() {
                         if (parts.size() > 3 && parts[1] == std::to_string(selectedCOI) && parts[2] == std::to_string(selectedMOE) && parts[3] == DSP) {
                             // MOE index from second part
                             int index = (std::stoi(parts[3]) - 1);
-
-                            // Value to add = # files in event folder / highest MOP value in the file titles
-                            // testResponsePath + event is the folder containing JSON files with titles like MOPX_ABC_...json
-
-                            // Iterate through files in the directory and extract the highest MOP value
-                            float highestMOP = 0.0f;
-                            for (const auto& entry : fs::directory_iterator(testResponsePath)) {
-                                if (entry.is_regular_file() && entry.path().extension() == ".json") {
-                                    // Extract the MOP value from the filename using a regex
-                                    std::string filename = entry.path().filename().string();
-                                    std::regex mopRegex("MOP(\\d+)");  // Regex to find MOPX where X is a number
-
-                                    std::smatch match;
-                                    if (std::regex_search(filename, match, mopRegex) && match.size() > 1) {
-                                        // Convert the extracted MOP value to an integer
-                                        int mopValue = std::stoi(match.str(1));  // match.str(1) is the number part after "MOP"
-                                        highestMOP = std::max(highestMOP, static_cast<float>(mopValue));  // Keep the highest MOP value
-                                    }
-                                }
-                            }
-
-                            // If no MOP value is found, handle it appropriately (maybe set to 1 or print a warning)
-                            if (highestMOP == 0.0f) {
-                                highestMOP = 1.0f;  // You can adjust this based on your needs
-                            }
-
-                            // Now calculate the value to add: # files / highest MOP value
-                            int numFiles = std::distance(fs::directory_iterator(testResponsePath), fs::directory_iterator{});
-                            float valueToAdd = static_cast<float>(numFiles) / highestMOP;
+                            std::string rPath = testProgramPath + "/" + event + "/";
+                            int valueToAdd = CountFilesInFolder(rPath);
 
                             // Ensure filteredResponseCounts has enough space
                             if (index >= filteredResponseCounts.size()) {
                                 filteredResponseCounts.resize(index + 1, 0);  // Resize and initialize new elements to 0
                             }
-
                             filteredResponseCounts[index] += valueToAdd;  // Add the value to the appropriate index
                         }
                     }
@@ -808,7 +752,6 @@ void MyApp::RenderAnalyzeSurveysPage() {
         */
     }
     ImGui::EndChild();
-
 
 
     
