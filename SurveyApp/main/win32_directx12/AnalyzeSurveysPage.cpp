@@ -52,8 +52,8 @@ struct ResponseTypeA {
 };
 
 struct QuestionData {
-    std::string responseType;  // The response type ID for this question
-    std::vector<int> responses;  // Responses (numeric values)
+    vector<string> labels;
+    vector<int> responses;  // Responses (numeric values)
 };
 
 vector<ResponseTypeA> responseTypes;
@@ -160,7 +160,6 @@ void RenderProgressBars(const vector<float>& endResultData, const vector<float>&
 
     // Set the x and y axis limits, keeping the minimum as -0.01f
     ImPlot::SetupAxesLimits(0.5f, (plotLims[0]) +0.5f, -0.1f, plotLims[1] * 1.3f);
-    // ImPlot::SetupAxesLimits(0.0f, 10.0f, -0.1f, 10.0f);
 
     // Plot the "end result" data as bars, with the modified data
     ImPlot::PlotBars(endResultName, modifiedEndResultData.data(), static_cast<int>(modifiedEndResultData.size()));
@@ -177,7 +176,14 @@ void RenderProgressBars(const vector<float>& endResultData, const vector<float>&
 
 
 
-void RenderResponsePlots(const std::map<std::string, std::vector<int>>& plotData) {
+
+
+
+
+
+
+
+void RenderResponsePlots(const std::map<std::string, QuestionData>& plotData) {
     static bool popupOpen = false;  // Control whether popup is open
     static int currentPlotIndex = 0; // For navigating between plots
 
@@ -186,63 +192,87 @@ void RenderResponsePlots(const std::map<std::string, std::vector<int>>& plotData
         popupOpen = true;
     }
 
+    // Ensure the popup window is open
     if (popupOpen) {
         ImGui::OpenPopup("Response Plot");
     }
 
-    // Ensure the popup window is open
-    if (ImGui::BeginPopupModal("Response Plot", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+    // Ensure the popup window is open and plotData is not empty
+    if (ImGui::BeginPopupModal("Response Plot", NULL)) {
+        // Convert the plot data into appropriate vectors
+        std::vector<std::string> questions;
+        std::vector<std::vector<int>> responses;
+        std::vector<std::vector<std::string>> allLabels;
 
-        // Ensure that plotData is not empty before proceeding with rendering
-        if (plotData.empty()) {
-            ImGui::Text("No data available for plotting.");
+        for (const auto& entry : plotData) {
+            questions.push_back(entry.first);
+            responses.push_back(entry.second.responses);
+            allLabels.push_back(entry.second.labels);
         }
-        else {
-            // Convert the plot data into appropriate vectors
-            std::vector<std::string> questions;
-            std::vector<std::vector<int>> responses;
 
-            for (const auto& entry : plotData) {
-                questions.push_back(entry.first);
-                responses.push_back(entry.second);
-            }
+        // Ensure currentPlotIndex is within bounds
+        currentPlotIndex = std::clamp(currentPlotIndex, 0, static_cast<int>(questions.size()) - 1);
 
-            // Ensure currentPlotIndex is within bounds
-            currentPlotIndex = std::clamp(currentPlotIndex, 0, static_cast<int>(questions.size()) - 1);
+        // Get the current question, responses, and labels
+        const std::string& currentQuestion = questions[currentPlotIndex];
+        const std::vector<int>& currentResponses = responses[currentPlotIndex];
+        const std::vector<std::string>& currentLabels = allLabels[currentPlotIndex];
 
-            const std::string& currentQuestion = questions[currentPlotIndex];
-            const std::vector<int>& currentResponses = responses[currentPlotIndex];
-            std::vector<float> responseFloats(currentResponses.begin(), currentResponses.end());
+        // Loop through each label and replace spaces with newline characters
+        std::vector<std::string> modifiedLabels;
+        for (const auto& label : currentLabels) {
+            std::string modifiedLabel = label; // Make a copy of the label
+            std::replace(modifiedLabel.begin(), modifiedLabel.end(), ' ', '\n'); // Replace spaces with newlines
+            modifiedLabels.push_back(modifiedLabel);
+        }
 
-            // Begin plotting
-            ImPlot::BeginPlot(("Response Plot for " + currentQuestion).c_str());
-            float maxResponse = *std::max_element(responseFloats.begin(), responseFloats.end());
-            ImPlot::SetupAxesLimits(-0.5f, static_cast<float>(responseFloats.size()), 0.0f, maxResponse * 1.1f);
-            ImPlot::PlotBars("Responses", responseFloats.data(), static_cast<int>(responseFloats.size()));
-            ImPlot::EndPlot();
+        // Find the maximum response value for the y-axis limit
+        float maxResponse = *std::max_element(currentResponses.begin(), currentResponses.end());
 
-            // Display navigation buttons
-            if (ImGui::Button("Previous")) {
-                currentPlotIndex--;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Next")) {
-                currentPlotIndex++;
-            }
+        // Begin plotting
+        ImPlot::BeginPlot(("Response Plot for " + currentQuestion).c_str());
 
-            // Display the current question
-            ImGui::Text("Question: %s", currentQuestion.c_str());
+        // Set up the axes and labels for the X and Y axes
+        ImPlot::SetupAxes("Response Labels", "Count");
+
+        // Set the x and y axis limits
+        ImPlot::SetupAxesLimits(0.5f, static_cast<float>(currentResponses.size())+1.5f, -0.5f, maxResponse * 1.3f);
+
+        // Plot the bar chart for the current question's responses
+        ImPlot::PlotBars("Responses", currentResponses.data(), currentResponses.size(), 0.8f);  // 0.8f is the bar width
+
+        // Display the labels on the x-axis (adjust placement if needed)
+        for (size_t i = 0; i < modifiedLabels.size(); ++i) {
+            ImPlot::PlotText(modifiedLabels[i].c_str(), i + 1, -0.1f);  // Adjust text placement as needed
+        }
+
+        ImPlot::EndPlot();
+
+        // Display navigation buttons
+        if (ImGui::Button("Previous")) {
+            currentPlotIndex--;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Next")) {
+            currentPlotIndex++;
         }
 
         // Close button to exit the popup
         if (ImGui::Button("Close")) {
-            popupOpen = false;
             ImGui::CloseCurrentPopup();
+            popupOpen = false;
         }
 
         ImGui::EndPopup(); // End of popup modal
     }
 }
+
+
+
+
+
+
+
 
 
 
@@ -284,29 +314,48 @@ void GetResponseTypes(const string& filename) {
     }
 }
 
+
+
+
+
+
 // Function to retrieve the response data for each file
-std::map<std::string, std::vector<int>> ProcessResponseData(const std::string& testResponsePath, const std::vector<std::string>& respondedEvents,
+std::map<std::string, QuestionData> ProcessResponseData(const std::string& testResponsePath, const std::vector<std::string>& respondedEvents,
     const std::vector<ResponseTypeA>& responseTypes, int selectedCOI, int selectedMOE) {
+
+    int responseCounter = 0;
+
     // Map to hold the responses grouped by questions
-    std::map<std::string, std::vector<int>> questionResponses;
+    std::map<std::string, QuestionData> questionResponses;
 
     // Iterate through the directories in the base folder
+    std::cout << "Processing directory: " << testResponsePath << std::endl;
     for (const auto& entry : fs::directory_iterator(testResponsePath)) {
         if (entry.is_directory()) {
             std::string eventDir = entry.path().filename().string(); // Get the event directory name
+            std::cout << "Found event directory: " << eventDir << std::endl;
 
-            // Split the directory name to extract COI and MOE (assuming the event name format is V_COI_MOE_... like V_1_1_01_4)
+            // Split the directory name to extract COI and MOE
             std::vector<std::string> parts = SplitStringByDelimiter(eventDir, '_');
+            std::cout << "Split event directory: ";
+            for (const auto& part : parts) {
+                std::cout << part << " ";
+            }
+            std::cout << std::endl;
+
             if (parts.size() > 2 && parts[1] == std::to_string(selectedCOI) && parts[2] == std::to_string(selectedMOE)) {
+                std::cout << "Matching COI and MOE found. COI: " << selectedCOI << ", MOE: " << selectedMOE << std::endl;
 
                 // Iterate through the files inside this event directory
                 for (const auto& fileEntry : fs::directory_iterator(entry.path())) {
                     if (fileEntry.is_regular_file()) {
                         std::string rPath = fileEntry.path().string(); // Get the full file path
+                        std::cout << "Processing file: " << rPath << std::endl;
 
                         // Open the JSON file
                         std::ifstream file(rPath);
                         if (!file.is_open()) {
+                            std::cout << "Failed to open file: " << rPath << std::endl;
                             continue;
                         }
 
@@ -317,20 +366,53 @@ std::map<std::string, std::vector<int>> ProcessResponseData(const std::string& t
                         auto responseTypeIDs = jsonData["responseTypes"].get<std::vector<std::string>>(); // response type IDs
                         auto responses = jsonData["responses"].get<std::vector<int>>(); // Numeric responses
 
-                        // Process the responses for each question
+                        std::cout << "Processing JSON data..." << std::endl;
+                        // For each question, responseTypeID, response set
                         for (size_t i = 0; i < questions.size(); ++i) {
-                            const std::string& question = questions[i];
-                            const std::string& responseTypeID = responseTypeIDs[i];
+                            auto question = questions[i];
+                            auto responseTypeID = responseTypeIDs[i];
+                            auto response = responses[i];
 
-                            // Find the corresponding response type
-                            auto it = std::find_if(responseTypes.begin(), responseTypes.end(), [&](const ResponseTypeA& rt) {
-                                return rt.id == responseTypeID;
-                                });
+                            std::cout << "Processing question: " << question << std::endl;
+                            std::cout << "ResponseTypeID: " << responseTypeID << ", Response: " << response << std::endl;
 
-                            if (it != responseTypes.end()) {
-                                // If the response type is found, append the response
-                                questionResponses[question].push_back(responses[i]);
+                            // Check if the question already exists in the map
+                            if (questionResponses.find(question) == questionResponses.end()) {
+                                std::cout << "New question encountered: " << question << std::endl;
+
+                                // Create QuestionData object and fill it
+                                int c = 0;
+                                std::vector<std::string> l;
+
+                                // Get data from responseTypes
+                                for (const auto& rt : responseTypes) {
+                                    std::string id = rt.id;
+
+                                    if (id == responseTypeID) {
+                                        c = rt.count;
+                                        l = rt.labels;
+                                        std::cout << "Found matching ResponseTypeID. Count: " << c << ", Labels: ";
+                                        for (const auto& label : l) {
+                                            std::cout << label << " ";
+                                        }
+                                        std::cout << std::endl;
+                                        break;  // We found the matching responseTypeID, no need to continue looping
+                                    }
+                                }
+
+                                // Initialize the responses vector with zeros based on the response count
+                                std::vector<int> r(c, 0);
+
+                                // Add the new question with an empty response count to the map
+                                questionResponses[question] = { l, r };
+                                std::cout << "Added new question to map: " << question << std::endl;
                             }
+
+                            // Access the existing response vector and increment the corresponding response
+                            auto& r = questionResponses[question].responses;
+                            r[response - 1] += 1;
+                            cout << "Response is " << response << "... subtracting 1 then adding to index" << endl << endl;
+                            std::cout << "Incremented response for question: " << question << " to count: " << r[response - 1] << std::endl;
                         }
                     }
                 }
@@ -338,15 +420,22 @@ std::map<std::string, std::vector<int>> ProcessResponseData(const std::string& t
         }
     }
 
+    // Print out the final grouped responses for debugging
+    std::cout << "Final grouped responses: " << std::endl;
+    for (const auto& entry : questionResponses) {
+        std::cout << "Question: " << entry.first << endl << "Labels: ";
+        for (const auto& label : entry.second.labels) {
+            std::cout << label << ", ";
+        }
+        std::cout << endl << "Responses: ";
+        for (const auto& response : entry.second.responses) {
+            std::cout << response << " ";
+        }
+        std::cout << std::endl << endl;
+    }
     // Return the grouped responses (map of questions to responses)
     return questionResponses;
 }
-
-
-
-
-
-
 
 
 
@@ -1086,7 +1175,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
     static bool displayError = false;
 
     if (selectedTestProgramIndex > 0) {
-        if (ImGui::Button("Display All")) {
+        if (ImGui::Button("Make Plots")) {
             // Check if COI and MOE are selected properly
             if (selectedCOI > 0 && selectedMOE > 0) displayResponses = true;            
             else displayError = true;
@@ -1102,9 +1191,6 @@ void MyApp::RenderAnalyzeSurveysPage() {
         ImGui::SameLine();
         if (ImGui::Button("Nope, sounds like a bad idea")) { displayResponses = false; displayError = false; }
     }
-
-
-    ImGui::Columns(1);
 
     // string to store response filename, bool to store whether the response meets the metadata requirements
     static vector<pair<string, bool>> surveyResponses;
@@ -1312,20 +1398,27 @@ void MyApp::RenderAnalyzeSurveysPage() {
     // lets start with just plotting if COI and MOE are already selected.
     // get data for all files that match the coi and moe
 
-    static std::map<std::string, std::vector<int>> plotData;
+    static std::map<std::string, QuestionData> plotData;
+
+    bool plotGenerated = false;
 
     if (displayResponses && selectedMOE > 0 && !filterComplete) {
         plotData = ProcessResponseData(testResponsePath, respondedEvents, responseTypes, selectedCOI, selectedMOE);
         filterComplete = true;
     }
 
-    if (!plotData.empty()) {
+    
+    if (!plotData.empty() && !plotGenerated) {
         // Generate plots if plotData not empty
         cout << "Plotting" << endl;
         RenderResponsePlots(plotData);
+        plotGenerated = true;
     }
+    plotGenerated = true;
+    
 
     ImGui::NewLine();
+    ImGui::Columns(1);
     
         
     ImPlot::DestroyContext();
