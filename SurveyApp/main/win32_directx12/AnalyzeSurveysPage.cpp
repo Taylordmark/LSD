@@ -18,11 +18,19 @@
 
 namespace fs = std::filesystem;
 
+using std::string;
+using std::vector;
+using std::unordered_map;
+using std::ifstream;
+using std::endl;
+using std::map;
+using std::pair;
+using std::cout;
 
 
-static std::string responsesPath = "C:/LSD/AppFiles/Responses";
-static std::string responseTypesPath = "C:/LSD/AppFiles/responsetypes.json";
-static std::string testProgramsPath = "C:/LSD/AppFiles/TestPrograms";
+static string responsesPath = "C:/LSD/AppFiles/Responses";
+static string responseTypesPath = "C:/LSD/AppFiles/responsetypes.json";
+static string testProgramsPath = "C:/LSD/AppFiles/TestPrograms";
 
 // Data to show correct survey
 static int selectedTestProgramIndex = 0;
@@ -32,43 +40,30 @@ static int lastCOIIndex = 0;
 static int lastMOEIndex = 0;
 static int lastDSPIndex = 0;
 
-static std::string selectedTestProgram = "";
-static std::string selectedTestEvent = "";
+static string selectedTestProgram = "";
+static string selectedTestEvent = "";
 
-static std::vector<std::string> dropdownLabels = { "COI","Measure of Effectiveness", "Design Point" };
+static vector<string> dropdownLabels = { "COI","Measure of Effectiveness", "Design Point" };
 
 struct ResponseTypeA {
-    std::string id;
+    string id;
     int count;
-    std::vector<std::string> labels;  // List of labels for the response options
+    vector<string> labels;  // List of labels for the response options
 };
 
-std::vector<ResponseTypeA> responseTypes;
+struct QuestionData {
+    std::string responseType;  // The response type ID for this question
+    std::vector<int> responses;  // Responses (numeric values)
+};
 
-// Load response types from a JSON file
-void GetResponseTypes(const std::string& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Failed to load file: " << filename << std::endl;
-        return;
-    }
+vector<ResponseTypeA> responseTypes;
 
-    nlohmann::json jsonData;
-    file >> jsonData;
 
-    responseTypes.clear();  // Clear the global responseTypes vector
-    for (const auto& item : jsonData["responseTypes"]) {
-        ResponseTypeA rt;
-        rt.id = item["id"];  // Correctly using the `id` from the JSON
-        rt.count = item["count"];  // Correctly using the `count`
-        rt.labels = item["labels"].get<std::vector<std::string>>();  // Correctly using the `labels`
-        responseTypes.push_back(rt);
-    }
-}
+
 
 // Get all folder names from selected directory
-std::vector<std::string> GetSurveyFolders(const std::string& directoryPath) {
-    std::vector<std::string> folderNames;
+vector<string> GetSurveyFolders(const string& directoryPath) {
+    vector<string> folderNames;
     try {
         for (const auto& entry : fs::directory_iterator(directoryPath)) {
             if (entry.is_directory()) {
@@ -77,15 +72,15 @@ std::vector<std::string> GetSurveyFolders(const std::string& directoryPath) {
         }
     }
     catch (const fs::filesystem_error& e) {
-        std::cerr << "Error reading directory: " << e.what() << std::endl;
+        std::cerr << "Error reading directory: " << e.what() << endl;
     }
     return folderNames;
 }
 
 // Display Test Program Combo Box (Dropdown) after getting local folder names
-int RenderDropdown(const std::vector<std::string>& foldersSet, const std::string& identifier, int currentSelection) {
+int RenderDropdown(const vector<string>& foldersSet, const string& identifier, int currentSelection) {
     ImGui::SameLine();
-    std::string dropdownLabel = "## Dropdown for " + identifier;
+    string dropdownLabel = "## Dropdown for " + identifier;
 
     // Ensure that dropdownLabel is a C-style string using .c_str()
     if (ImGui::BeginCombo(dropdownLabel.c_str(), currentSelection == 0 ? "Select" : foldersSet[currentSelection].c_str())) {
@@ -104,7 +99,7 @@ int RenderDropdown(const std::vector<std::string>& foldersSet, const std::string
 }
 
 // Function to count the number of files in a folder
-int CountFilesInFolder(const std::string& folderPath) {
+int CountFilesInFolder(const string& folderPath) {
     int count = 0;
     
     for (const auto& entry : fs::directory_iterator(folderPath)) {
@@ -118,17 +113,17 @@ int CountFilesInFolder(const std::string& folderPath) {
 }
 
 // Load data from csv file
-bool loadCSV2(const std::string& filename, std::vector<std::vector<std::string>>& data, std::vector<std::string>& comments) {
+bool loadCSV2(const string& filename, vector<vector<string>>& data, vector<string>& comments) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Could not open the file: " << filename << std::endl;
         return false;
     }
 
-    std::string line;
+    string line;
     while (std::getline(file, line)) {
-        std::vector<std::string> row;
-        std::string cell;
+        vector<string> row;
+        string cell;
         std::istringstream lineStream(line);
 
         while (std::getline(lineStream, cell, ',')) {
@@ -150,14 +145,14 @@ bool loadCSV2(const std::string& filename, std::vector<std::vector<std::string>>
 }
 
 // Bar plot code
-void RenderProgressBars(const std::vector<float>& endResultData, const std::vector<float>& currentProgressData,
-    const char* title, const char* endResultName, const char* currentProgressName, const std::vector<float>& plotLims) {
+void RenderProgressBars(const vector<float>& endResultData, const vector<float>& currentProgressData,
+    const char* title, const char* endResultName, const char* currentProgressName, const vector<float>& plotLims) {
 
     // Insert 0 at the beginning of both endResultData and currentProgressData
-    std::vector<float> modifiedEndResultData = { 0.0f };
+    vector<float> modifiedEndResultData = { 0.0f };
     modifiedEndResultData.insert(modifiedEndResultData.end(), endResultData.begin(), endResultData.end());
 
-    std::vector<float> modifiedCurrentProgressData = { 0.0f };
+    vector<float> modifiedCurrentProgressData = { 0.0f };
     modifiedCurrentProgressData.insert(modifiedCurrentProgressData.end(), currentProgressData.begin(), currentProgressData.end());
 
     // Begin the ImPlot context (for plotting)
@@ -177,17 +172,193 @@ void RenderProgressBars(const std::vector<float>& endResultData, const std::vect
     ImPlot::EndPlot();
 }
 
+
+
+
+
+
+void RenderResponsePlots(const std::map<std::string, std::vector<int>>& plotData) {
+    static bool popupOpen = false;  // Control whether popup is open
+    static int currentPlotIndex = 0; // For navigating between plots
+
+    // Trigger popup opening based on a button press (or some other event)
+    if (ImGui::Button("Open Plot Window")) {
+        popupOpen = true;
+    }
+
+    if (popupOpen) {
+        ImGui::OpenPopup("Response Plot");
+    }
+
+    // Ensure the popup window is open
+    if (ImGui::BeginPopupModal("Response Plot", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+
+        // Ensure that plotData is not empty before proceeding with rendering
+        if (plotData.empty()) {
+            ImGui::Text("No data available for plotting.");
+        }
+        else {
+            // Convert the plot data into appropriate vectors
+            std::vector<std::string> questions;
+            std::vector<std::vector<int>> responses;
+
+            for (const auto& entry : plotData) {
+                questions.push_back(entry.first);
+                responses.push_back(entry.second);
+            }
+
+            // Ensure currentPlotIndex is within bounds
+            currentPlotIndex = std::clamp(currentPlotIndex, 0, static_cast<int>(questions.size()) - 1);
+
+            const std::string& currentQuestion = questions[currentPlotIndex];
+            const std::vector<int>& currentResponses = responses[currentPlotIndex];
+            std::vector<float> responseFloats(currentResponses.begin(), currentResponses.end());
+
+            // Begin plotting
+            ImPlot::BeginPlot(("Response Plot for " + currentQuestion).c_str());
+            float maxResponse = *std::max_element(responseFloats.begin(), responseFloats.end());
+            ImPlot::SetupAxesLimits(-0.5f, static_cast<float>(responseFloats.size()), 0.0f, maxResponse * 1.1f);
+            ImPlot::PlotBars("Responses", responseFloats.data(), static_cast<int>(responseFloats.size()));
+            ImPlot::EndPlot();
+
+            // Display navigation buttons
+            if (ImGui::Button("Previous")) {
+                currentPlotIndex--;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Next")) {
+                currentPlotIndex++;
+            }
+
+            // Display the current question
+            ImGui::Text("Question: %s", currentQuestion.c_str());
+        }
+
+        // Close button to exit the popup
+        if (ImGui::Button("Close")) {
+            popupOpen = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup(); // End of popup modal
+    }
+}
+
+
+
+
+
+
+
+
 // Helper function to split a string by a delimiter
-std::vector<std::string> SplitStringByDelimiter(const std::string& str, char delimiter) {
-    std::vector<std::string> parts;
+vector<string> SplitStringByDelimiter(const string& str, char delimiter) {
+    vector<string> parts;
     std::stringstream ss(str);
-    std::string part;
+    string part;
 
     while (std::getline(ss, part, delimiter)) {
         parts.push_back(part);
     }
     return parts;
 }
+
+// Load response types from a JSON file
+void GetResponseTypes(const string& filename) {
+    ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Failed to load file: " << filename << endl;
+        return;
+    }
+
+    nlohmann::json jsonData;
+    file >> jsonData;
+
+    responseTypes.clear();  // Clear the global responseTypes vector
+    for (const auto& item : jsonData["responseTypes"]) {
+        ResponseTypeA rt;
+        rt.id = item["id"];  // Correctly using the `id` from the JSON
+        rt.count = item["count"];  // Correctly using the `count`
+        rt.labels = item["labels"].get<vector<string>>();  // Correctly using the `labels`
+        responseTypes.push_back(rt);
+    }
+}
+
+// Function to retrieve the response data for each file
+std::map<std::string, std::vector<int>> ProcessResponseData(const std::string& testResponsePath, const std::vector<std::string>& respondedEvents,
+    const std::vector<ResponseTypeA>& responseTypes, int selectedCOI, int selectedMOE) {
+    // Map to hold the responses grouped by questions
+    std::map<std::string, std::vector<int>> questionResponses;
+
+    // Iterate through the directories in the base folder
+    for (const auto& entry : fs::directory_iterator(testResponsePath)) {
+        if (entry.is_directory()) {
+            std::string eventDir = entry.path().filename().string(); // Get the event directory name
+
+            // Split the directory name to extract COI and MOE (assuming the event name format is V_COI_MOE_... like V_1_1_01_4)
+            std::vector<std::string> parts = SplitStringByDelimiter(eventDir, '_');
+            if (parts.size() > 2 && parts[1] == std::to_string(selectedCOI) && parts[2] == std::to_string(selectedMOE)) {
+
+                // Iterate through the files inside this event directory
+                for (const auto& fileEntry : fs::directory_iterator(entry.path())) {
+                    if (fileEntry.is_regular_file()) {
+                        std::string rPath = fileEntry.path().string(); // Get the full file path
+
+                        // Open the JSON file
+                        std::ifstream file(rPath);
+                        if (!file.is_open()) {
+                            continue;
+                        }
+
+                        nlohmann::json jsonData;
+                        file >> jsonData;
+
+                        auto questions = jsonData["questions"].get<std::vector<std::string>>();
+                        auto responseTypeIDs = jsonData["responseTypes"].get<std::vector<std::string>>(); // response type IDs
+                        auto responses = jsonData["responses"].get<std::vector<int>>(); // Numeric responses
+
+                        // Process the responses for each question
+                        for (size_t i = 0; i < questions.size(); ++i) {
+                            const std::string& question = questions[i];
+                            const std::string& responseTypeID = responseTypeIDs[i];
+
+                            // Find the corresponding response type
+                            auto it = std::find_if(responseTypes.begin(), responseTypes.end(), [&](const ResponseTypeA& rt) {
+                                return rt.id == responseTypeID;
+                                });
+
+                            if (it != responseTypes.end()) {
+                                // If the response type is found, append the response
+                                questionResponses[question].push_back(responses[i]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Return the grouped responses (map of questions to responses)
+    return questionResponses;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -210,7 +381,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
     ImGui::NewLine();
 
     // Test Programs variable for dropdown values, from Test Programs folder
-    static std::vector<std::string> testPrograms;
+    static vector<string> testPrograms;
 
     // If first time loading, load Test Program options
     if (testPrograms.empty()) {
@@ -241,24 +412,24 @@ void MyApp::RenderAnalyzeSurveysPage() {
     if (selectedTestProgramIndex > 0) { selectedTestProgram = testPrograms[selectedTestProgramIndex]; }
 
     // After selection, fill test events, dataMap, responded events
-    static std::vector<std::string> allTestEvents;
-    static std::map<std::string, std::map<std::string, std::vector<std::string>>> dataMap;
-    static std::vector<std::string> respondedEvents;
+    static vector<string> allTestEvents;
+    static map<string, map<string, vector<string>>> dataMap;
+    static vector<string> respondedEvents;
 
     // Set up aggregate COI variables for plot
-    static std::map<int, int> COISurveyCounts;
-    static std::map<int, int> COIResponseCounts;
+    static map<int, int> COISurveyCounts;
+    static map<int, int> COIResponseCounts;
 
     // Values for counts after filtering
-    static std::vector<float> filteredSurveyCounts;
-    static std::vector<float> filteredResponseCounts;
-    static std::vector<float> filteredSurveysRemaining;
+    static vector<float> filteredSurveyCounts;
+    static vector<float> filteredResponseCounts;
+    static vector<float> filteredSurveysRemaining;
 
     static bool filterComplete = false;
     
     // Set test program path using Dropdown value
-    std::string testProgramPath = testProgramsPath + "/" + selectedTestProgram;
-    std::string testResponsePath = responsesPath + "/" + selectedTestProgram;
+    string testProgramPath = testProgramsPath + "/" + selectedTestProgram;
+    string testResponsePath = responsesPath + "/" + selectedTestProgram;
 
     // If test events have not been loaded and a test program is selected, load test events from TestProgram/Program path
     if ((allTestEvents.empty() or pageRefresh or respondedEvents.empty()) && selectedTestProgramIndex > 0) {
@@ -271,16 +442,16 @@ void MyApp::RenderAnalyzeSurveysPage() {
         // for each test event, tokenize it based on underscores and add to dataMap
         for (const auto& event : allTestEvents) {
 
-            std::vector<std::string> parts = SplitStringByDelimiter(event, '_');
+            vector<string> parts = SplitStringByDelimiter(event, '_');
 
             // Ensure we have at least 4 parts (A, B, C, D, N)
             if (parts.size() >= 5) {
                 try {
                     // Store parts B, C, D (i.e., parts[1], parts[2], parts[3]) as strings
-                    std::string coiValue = parts[1];
-                    std::string mopsValue = parts[2];
-                    std::string dspsValue = parts[3];
-                    std::string minCount = parts[4];
+                    string coiValue = parts[1];
+                    string mopsValue = parts[2];
+                    string dspsValue = parts[3];
+                    string minCount = parts[4];
 
                     // Use the nested map structure to store COIS, MOES, DSPS
                     dataMap[coiValue][mopsValue].push_back(dspsValue);
@@ -295,11 +466,11 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
                 // Extract the number after the last underscore
                 size_t pos = event.rfind('_');
-                if (pos != std::string::npos) {
-                    std::string numberStr = event.substr(pos + 1);  // Get the part after the last underscore
+                if (pos != string::npos) {
+                    string numberStr = event.substr(pos + 1);  // Get the part after the last underscore
 
                     // Count the number of files in the event's folder
-                    std::string eventFolderPath = testProgramsPath + "/" + selectedTestProgram + "/" + event;
+                    string eventFolderPath = testProgramsPath + "/" + selectedTestProgram + "/" + event;
                     int fileCount = CountFilesInFolder(eventFolderPath);
 
                     // Multiply the number by the file count
@@ -337,7 +508,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
         for (const auto& event : respondedEvents) {
 
             // Count the number of files in the event's folder
-            std::string eventFolderPath = testResponsePath + "/" + event;
+            string eventFolderPath = testResponsePath + "/" + event;
             int fileCount = CountFilesInFolder(eventFolderPath);
 
             // Get the second character of the event value
@@ -389,9 +560,9 @@ void MyApp::RenderAnalyzeSurveysPage() {
     // Filtering of data for plots
 
     // Dropdown variables
-    std::vector<std::string> COIS;
-    std::vector<std::string> MOES;
-    std::vector<std::string> DSPS;
+    vector<string> COIS;
+    vector<string> MOES;
+    vector<string> DSPS;
 
     // Dropdown status monitor
     static int selectedCOI = 0;
@@ -421,7 +592,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
         filterComplete = false;
         pageRefresh = true;
 
-        std::cout << "Clearing stuff" << std::endl;
+        std::cout << "Clearing stuff" << endl;
     }
 
     // First check COI. If something selected, render next, etc. Otherwise set all filters to 0
@@ -491,12 +662,12 @@ void MyApp::RenderAnalyzeSurveysPage() {
                     // Iterate through test events
                     for (const auto& event : allTestEvents) {
                         // Split the event string by underscores to get coi data etc
-                        std::vector<std::string> parts = SplitStringByDelimiter(event, '_');
+                        vector<string> parts = SplitStringByDelimiter(event, '_');
 
                         // If test event is part of current COI iteration
                         if (parts.size() > 1 && parts[1] == COI) {
 
-                            std::string sPath = testProgramPath + "/" + event + "/";
+                            string sPath = testProgramPath + "/" + event + "/";
                             int mopcount = CountFilesInFolder(sPath);
                             int index = (std::stoi(parts[1]) - 1); // Get the index from the last part of the string
                             float valueToAdd = std::stof(parts.back()); // Convert the last part to integer (for the value)
@@ -511,15 +682,14 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
                     // Iterate through responses
                     for (const auto& event : respondedEvents) {
-                        std::cout << "Event :" << event << std::endl;
                         // Split the event string by underscores
-                        std::vector<std::string> parts = SplitStringByDelimiter(event, '_');
+                        vector<string> parts = SplitStringByDelimiter(event, '_');
 
                         // If response is a part of COI, add number of responses
                         if (parts.size() > 1 && parts[1] == COI) {
                             int index = (std::stoi(parts[1]) - 1);  // Get the index from the second part of the string (assuming index is at parts[1])
 
-                            std::string rPath = testProgramPath + "/" + event + "/";                                                       
+                            string rPath = testProgramPath + "/" + event + "/";                                                       
                             int valueToAdd = CountFilesInFolder(rPath);
 
                             // Ensure filteredResponseCounts has enough space
@@ -546,7 +716,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 float max_survey_value = *std::max_element(filteredSurveyCounts.begin(), filteredSurveyCounts.end());
 
                 // Set plotLims with max values
-                std::vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
+                vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
                                 
                 // Changed back to filtered survey counts
                 RenderProgressBars(filteredSurveyCounts, filteredResponseCounts, "Survey Completion by \n Critical Operational Issue",
@@ -561,7 +731,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
             if (filteredSurveyCounts.empty()) {
 
                 // Fill filteredSurveyCounts with data by MOE
-                std::map<std::string, std::vector<std::string>> COIMAP = dataMap[std::to_string(selectedCOI)];
+                map<string, vector<string>> COIMAP = dataMap[std::to_string(selectedCOI)];
                 const int COIMapSize = static_cast<int>(COIMAP.size());
                 for (const auto& MOEpair : COIMAP) {
                     auto MOE = MOEpair.first;
@@ -569,11 +739,11 @@ void MyApp::RenderAnalyzeSurveysPage() {
                     // Add survey counts to the survey counter vector
                     for (const auto& event : allTestEvents) {
                         // Split the event string by underscores
-                        std::vector<std::string> parts = SplitStringByDelimiter(event, '_');
+                        vector<string> parts = SplitStringByDelimiter(event, '_');
 
                         // If test event is part of selected COI and current MOE iteration
                         if (parts.size() > 2 && parts[1] == std::to_string(selectedCOI) && parts[2] == MOE) {
-                            std::string sPath = testProgramPath + "/" + event + "/";
+                            string sPath = testProgramPath + "/" + event + "/";
                             int mopcount = CountFilesInFolder(sPath);
                             int index = (std::stoi(parts[2]) - 1); // Get the index from the third part of the string
                             float valueToAdd = std::stof(parts.back()); // Convert the last part to integer (for the value)
@@ -589,12 +759,12 @@ void MyApp::RenderAnalyzeSurveysPage() {
                     // Add response counts to the responses counter vector
                     for (const auto& event : respondedEvents) {
                         // Split the event string by underscores
-                        std::vector<std::string> parts = SplitStringByDelimiter(event, '_');
+                        vector<string> parts = SplitStringByDelimiter(event, '_');
 
                         // If response is a part of MOE, add number of responses
                         if (parts.size() > 2 && parts[1] == std::to_string(selectedCOI) && parts[2] == MOE) {
                             int index = (std::stoi(parts[2]) - 1);  // Get the index from the third part of the string                            
-                            std::string rPath = testProgramPath + "/" + event + "/";
+                            string rPath = testProgramPath + "/" + event + "/";
                             int valueToAdd = CountFilesInFolder(rPath);
 
                             // Ensure filteredResponseCounts has enough space
@@ -619,7 +789,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 float max_survey_value = *std::max_element(filteredSurveyCounts.begin(), filteredSurveyCounts.end());
 
                 // Set plotLims with max values
-                std::vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
+                vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
 
                 RenderProgressBars(filteredSurveyCounts, filteredResponseCounts, "Selected COI Completion by \n Measure of Effectiveness",
                     "Total Surveys to Complete", "Surveys Administered", plotLims);
@@ -632,19 +802,19 @@ void MyApp::RenderAnalyzeSurveysPage() {
             if (filteredSurveyCounts.empty()) {
 
                 // Fill filteredSurveyCounts with data by MOP
-                std::vector<std::string> MOPMap = dataMap[std::to_string(selectedCOI)][std::to_string(selectedMOE)];
+                vector<string> MOPMap = dataMap[std::to_string(selectedCOI)][std::to_string(selectedMOE)];
                 const int MOPMapSize = MOPMap.size();
                 for (const auto& DSP : MOPMap) {
 
                     // Add survey counts to the survey counter vector
                     for (const auto& event : allTestEvents) {
                         // Split the event string by underscores
-                        std::vector<std::string> parts = SplitStringByDelimiter(event, '_');
+                        vector<string> parts = SplitStringByDelimiter(event, '_');
 
                         // If event is a part of selected COI and selected MOP and DSP (of loop) add last part of folder name to counter for DSP index
                         if (parts.size() > 3 && parts[1] == std::to_string(selectedCOI) && parts[2] == std::to_string(selectedMOE) && parts[3] == DSP) {
                             int index = (std::stoi(parts[3]) - 1); // Get the DSP index
-                            std::string sPath = testProgramPath + "/" + event + "/";
+                            string sPath = testProgramPath + "/" + event + "/";
                             int mopcount = CountFilesInFolder(sPath);
                             float valueToAdd = std::stof(parts.back()); // Convert the last part to integer (for the value)
 
@@ -659,13 +829,13 @@ void MyApp::RenderAnalyzeSurveysPage() {
                     // Add response counts to the responses counter vector
                     for (const auto& event : respondedEvents) {
                         // Split the event string by underscores
-                        std::vector<std::string> parts = SplitStringByDelimiter(event, '_');
+                        vector<string> parts = SplitStringByDelimiter(event, '_');
 
                         // If response is a part of MOP, add number of responses
                         if (parts.size() > 3 && parts[1] == std::to_string(selectedCOI) && parts[2] == std::to_string(selectedMOE) && parts[3] == DSP) {
                             // DSP index from third part
                             int index = (std::stoi(parts[3]) - 1);
-                            std::string rPath = testProgramPath + "/" + event + "/";
+                            string rPath = testProgramPath + "/" + event + "/";
                             int valueToAdd = CountFilesInFolder(rPath);
 
                             // Ensure filteredResponseCounts has enough space
@@ -690,7 +860,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 float max_survey_value = *std::max_element(filteredSurveyCounts.begin(), filteredSurveyCounts.end());
 
                 // Set plotLims with max values
-                std::vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
+                vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
 
                 RenderProgressBars(filteredSurveyCounts, filteredResponseCounts, "Selected Measure of Effectiveness \n Completion by Design Point",
                     "Total Surveys to Complete", "Surveys Administered", plotLims);
@@ -702,20 +872,20 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
             if (filteredSurveyCounts.empty()) {
                 // Fill filteredSurveyCounts with data by DSP
-                std::vector<std::string> MOEMap = dataMap[std::to_string(selectedCOI)][std::to_string(selectedMOE)];
+                vector<string> MOEMap = dataMap[std::to_string(selectedCOI)][std::to_string(selectedMOE)];
                 const int MOEMapSize = MOEMap.size();
                 for (const auto& DSP : MOEMap) {
 
                     // Add response counts to the responses counter vector
                     for (const auto& event : respondedEvents) {
                         // Split the event string by underscores
-                        std::vector<std::string> parts = SplitStringByDelimiter(event, '_');
+                        vector<string> parts = SplitStringByDelimiter(event, '_');
 
                         // If response is a part of MOE, add number of responses
                         if (parts.size() > 3 && parts[1] == std::to_string(selectedCOI) && parts[2] == std::to_string(selectedMOE) && parts[3] == DSP) {
                             // MOE index from second part
                             int index = (std::stoi(parts[3]) - 1);
-                            std::string rPath = testProgramPath + "/" + event + "/";
+                            string rPath = testProgramPath + "/" + event + "/";
                             int valueToAdd = CountFilesInFolder(rPath);
 
                             // Ensure filteredResponseCounts has enough space
@@ -741,27 +911,25 @@ void MyApp::RenderAnalyzeSurveysPage() {
         }
 
         /*
-        std::cout << "Full dataset in filteredSurveyCounts: " << std::endl;
+        std::cout << "Full dataset in filteredSurveyCounts: " << endl;
         for (size_t i = 0; i < filteredSurveyCounts.size(); ++i) {
-            std::cout << "Index " << i << ": " << filteredSurveyCounts[i] << std::endl;
+            std::cout << "Index " << i << ": " << filteredSurveyCounts[i] << endl;
         }
-        std::cout << "Full dataset in filteredResponseCounts: " << std::endl;
+        std::cout << "Full dataset in filteredResponseCounts: " << endl;
         for (size_t i = 0; i < filteredResponseCounts.size(); ++i) {
-            std::cout << "Index " << i << ": " << filteredResponseCounts[i] << std::endl;
+            std::cout << "Index " << i << ": " << filteredResponseCounts[i] << endl;
         }
         */
     }
     ImGui::EndChild();
 
-
-    
     ImGui::NextColumn();
     // Now all the metadata filters are shown and values saved to metadataFilters
 
     static nlohmann::json metadataFilters;
     static bool displayResponses = false;
 
-    std::string metadataPath = testProgramPath + +"/" + "metadataquestions.json";
+    string metadataPath = testProgramPath + +"/" + "metadataquestions.json";
 
     nlohmann::json metadataJson;
     std::ifstream metadataFile(metadataPath);
@@ -788,16 +956,16 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
         // Display the key above input
         ImGui::Text("%s", metaID.c_str());
-        std::string label = "##" + metaID;
+        string label = "##" + metaID;
 
         // Check if 'metaValues' has the required keys
         if (metaValues.contains("inputType")) {
-            std::string inputTypeValue = metaValues["inputType"].get<std::string>();
+            string inputTypeValue = metaValues["inputType"].get<std::string>();
 
             // If input type is array (dropdown), handle the dropdown logic
             if (inputTypeValue == "dropdown") {
 
-                std::vector<std::string> options = metaValues["preset"];
+                vector<string> options = metaValues["preset"];
                 int currentSelection = -1;
 
                 // Add "No selection" as the first option in the dropdown list
@@ -842,7 +1010,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
             // If input type is a string and show filled text box, if applicable
             if (inputTypeValue == "text") {
-                std::string currentValue = metaValues["response"];
+                string currentValue = metaValues["response"];
 
                 // Display the input box with the current value
                 char buf[256];
@@ -852,18 +1020,18 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
                 if (ImGui::InputText(label.c_str(), buf, sizeof(buf))) {
                     // When the user types something, update the metadata map
-                    metaValues["response"] = std::string(buf);  // Update the response field with new text
+                    metaValues["response"] = string(buf);  // Update the response field with new text
                 }
             }
 
             // If input type is "time" show two input boxes, one for min and one for max
             if (inputTypeValue == "time") {
-                std::string currentValue = metaValues["response"];
+                string currentValue = metaValues["response"];
 
                 // Split the currentValue into min and max if they exist, otherwise use empty strings
-                std::string minValue, maxValue;
+                string minValue, maxValue;
                 size_t commaPos = currentValue.find(",");
-                if (commaPos != std::string::npos) {
+                if (commaPos != string::npos) {
                     minValue = currentValue.substr(0, commaPos);
                     maxValue = currentValue.substr(commaPos + 1);
                 }
@@ -880,8 +1048,8 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 strncpy_s(maxBuf, sizeof(maxBuf), maxValue.c_str(), _TRUNCATE);  // _TRUNCATE ensures the string fits in the buffer
 
                 // Create Min and Max labels with the original label (metaID)
-                std::string minLabel = "Min##" + metaID;  // "Min##(original label)"
-                std::string maxLabel = "Max##" + metaID;  // "Max##(original label)"
+                string minLabel = "Min##" + metaID;  // "Min##(original label)"
+                string maxLabel = "Max##" + metaID;  // "Max##(original label)"
 
                 // Set the width for the input boxes
                 float inputWidth = 100.0f;  // Change this value to adjust the width of the input boxes
@@ -892,7 +1060,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 // Display the Min input box
                 if (ImGui::InputText(minLabel.c_str(), minBuf, sizeof(minBuf))) {
                     // When the user types something in the Min box, update the metadata map
-                    minValue = std::string(minBuf);  // Update Min value
+                    minValue = string(minBuf);  // Update Min value
                 }
                 ImGui::SameLine();
                 ImGui::Text("   ");
@@ -900,7 +1068,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 // Display the Max input box
                 if (ImGui::InputText(maxLabel.c_str(), maxBuf, sizeof(maxBuf))) {
                     // When the user types something in the Max box, update the metadata map
-                    maxValue = std::string(maxBuf);  // Update Max value
+                    maxValue = string(maxBuf);  // Update Max value
                 }
 
                 // Reset the width back to the default
@@ -939,7 +1107,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
     ImGui::Columns(1);
 
     // string to store response filename, bool to store whether the response meets the metadata requirements
-    static std::vector<std::pair<std::string, bool>> surveyResponses;
+    static vector<pair<string, bool>> surveyResponses;
 
     // If empty, fill it
     if (surveyResponses.empty()) {
@@ -957,7 +1125,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                     for (const auto& fileEntry : fs::directory_iterator(subFolder)) {
                         if (fs::is_regular_file(fileEntry) && fileEntry.path().extension() == ".json") {
                             // Get the relative folder/filename string
-                            std::string relativePath = subFolder.filename().string() + "/" + fileEntry.path().filename().string();
+                            string relativePath = subFolder.filename().string() + "/" + fileEntry.path().filename().string();
 
                             // Check metadata or any condition, here I'm using a placeholder boolean check
                             bool meetsMetadata = true;  // Add your metadata-check logic here
@@ -971,7 +1139,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
             }
         }
         else {
-            std::cerr << "Directory does not exist: " << programFolder << std::endl;
+            std::cerr << "Directory does not exist: " << programFolder << endl;
         }
     }
 
@@ -1136,19 +1304,26 @@ void MyApp::RenderAnalyzeSurveysPage() {
             }
         }
         std::cout << "Finished processing survey responses.\n";
+    }
+
+    // Now make a series of plots that can be navigated between using previous and next buttons
+    // One plot per MOP, grouped by COI, MOE
+
+    // lets start with just plotting if COI and MOE are already selected.
+    // get data for all files that match the coi and moe
+
+    static std::map<std::string, std::vector<int>> plotData;
+
+    if (displayResponses && selectedMOE > 0 && !filterComplete) {
+        plotData = ProcessResponseData(testResponsePath, respondedEvents, responseTypes, selectedCOI, selectedMOE);
         filterComplete = true;
     }
 
-
-
-
-    
-        // for each file path, check if conditions are met
-
-        // for each where conditions are met, plot each MOPs results in a new plot
-
-
-
+    if (!plotData.empty()) {
+        // Generate plots if plotData not empty
+        cout << "Plotting" << endl;
+        RenderResponsePlots(plotData);
+    }
 
     ImGui::NewLine();
     
