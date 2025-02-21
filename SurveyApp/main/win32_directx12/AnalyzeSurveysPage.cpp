@@ -18,6 +18,14 @@
 
 namespace fs = std::filesystem;
 
+namespace ImPlot {
+    enum ImAxis_ {
+        ImAxis_X, // Declared here
+        ImAxis_Y,
+        ImAxis_Z
+    };
+}
+
 using std::string;
 using std::vector;
 using std::unordered_map;
@@ -143,143 +151,6 @@ bool loadCSV2(const string& filename, vector<vector<string>>& data, vector<strin
 
     return true;
 }
-
-// Bar plot code
-void RenderProgressBars(const vector<float>& endResultData, const vector<float>& currentProgressData,
-    const char* title, const char* endResultName, const char* currentProgressName, const vector<float>& plotLims) {
-
-    // Insert 0 at the beginning of both endResultData and currentProgressData
-    vector<float> modifiedEndResultData = { 0.0f };
-    modifiedEndResultData.insert(modifiedEndResultData.end(), endResultData.begin(), endResultData.end());
-
-    vector<float> modifiedCurrentProgressData = { 0.0f };
-    modifiedCurrentProgressData.insert(modifiedCurrentProgressData.end(), currentProgressData.begin(), currentProgressData.end());
-
-    // Begin the ImPlot context (for plotting)
-    ImPlot::BeginPlot(title);
-
-    // Set the x and y axis limits, keeping the minimum as -0.01f
-    ImPlot::SetupAxesLimits(0.5f, (plotLims[0]) +0.5f, -0.1f, plotLims[1] * 1.3f);
-
-    // Plot the "end result" data as bars, with the modified data
-    ImPlot::PlotBars(endResultName, modifiedEndResultData.data(), static_cast<int>(modifiedEndResultData.size()));
-
-    // Plot the "current progress" data as bars, with the modified data
-    ImPlot::PlotBars(currentProgressName, modifiedCurrentProgressData.data(), static_cast<int>(modifiedCurrentProgressData.size()));
-
-    // End the plot and window
-    ImPlot::EndPlot();
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-void RenderResponsePlots(const std::map<std::string, QuestionData>& plotData) {
-    static bool popupOpen = false;  // Control whether popup is open
-    static int currentPlotIndex = 0; // For navigating between plots
-
-    // Trigger popup opening based on a button press (or some other event)
-    if (ImGui::Button("Open Plot Window")) {
-        popupOpen = true;
-    }
-
-    // Ensure the popup window is open
-    if (popupOpen) {
-        ImGui::OpenPopup("Response Plot");
-    }
-
-    // Ensure the popup window is open and plotData is not empty
-    if (ImGui::BeginPopupModal("Response Plot", NULL)) {
-        // Convert the plot data into appropriate vectors
-        std::vector<std::string> questions;
-        std::vector<std::vector<int>> responses;
-        std::vector<std::vector<std::string>> allLabels;
-
-        for (const auto& entry : plotData) {
-            questions.push_back(entry.first);
-            responses.push_back(entry.second.responses);
-            allLabels.push_back(entry.second.labels);
-        }
-
-        // Ensure currentPlotIndex is within bounds
-        currentPlotIndex = std::clamp(currentPlotIndex, 0, static_cast<int>(questions.size()) - 1);
-
-        // Get the current question, responses, and labels
-        const std::string& currentQuestion = questions[currentPlotIndex];
-        const std::vector<int>& currentResponses = responses[currentPlotIndex];
-        const std::vector<std::string>& currentLabels = allLabels[currentPlotIndex];
-
-        // Loop through each label and replace spaces with newline characters
-        std::vector<std::string> modifiedLabels;
-        for (const auto& label : currentLabels) {
-            std::string modifiedLabel = label; // Make a copy of the label
-            std::replace(modifiedLabel.begin(), modifiedLabel.end(), ' ', '\n'); // Replace spaces with newlines
-            modifiedLabels.push_back(modifiedLabel);
-        }
-
-        // Find the maximum response value for the y-axis limit
-        float maxResponse = *std::max_element(currentResponses.begin(), currentResponses.end());
-
-        // Begin plotting
-        ImPlot::BeginPlot(("Response Plot for " + currentQuestion).c_str());
-
-        // Set up the axes and labels for the X and Y axes
-        ImPlot::SetupAxes("Response Labels", "Count");
-
-        // Set the x and y axis limits
-        ImPlot::SetupAxesLimits(0.5f, static_cast<float>(currentResponses.size())+1.5f, -0.5f, maxResponse * 1.3f);
-
-        // Plot the bar chart for the current question's responses
-        ImPlot::PlotBars("Responses", currentResponses.data(), currentResponses.size(), 0.8f);  // 0.8f is the bar width
-
-        // Display the labels on the x-axis (adjust placement if needed)
-        for (size_t i = 0; i < modifiedLabels.size(); ++i) {
-            ImPlot::PlotText(modifiedLabels[i].c_str(), i + 1, -0.1f);  // Adjust text placement as needed
-        }
-
-        ImPlot::EndPlot();
-
-        // Display navigation buttons
-        if (ImGui::Button("Previous")) {
-            currentPlotIndex--;
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Next")) {
-            currentPlotIndex++;
-        }
-
-        // Close button to exit the popup
-        if (ImGui::Button("Close")) {
-            ImGui::CloseCurrentPopup();
-            popupOpen = false;
-        }
-
-        ImGui::EndPopup(); // End of popup modal
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Helper function to split a string by a delimiter
 vector<string> SplitStringByDelimiter(const string& str, char delimiter) {
@@ -438,6 +309,121 @@ std::map<std::string, QuestionData> ProcessResponseData(const std::string& testR
 }
 
 
+
+// Bar plot code
+void RenderProgressBars(const vector<float>& endResultData, const vector<float>& currentProgressData,
+    const char* title, const char* endResultName, const char* currentProgressName, const vector<float>& plotLims) {
+
+    // Insert 0 at the beginning of both endResultData and currentProgressData
+    vector<float> modifiedEndResultData = { 0.0f };
+    modifiedEndResultData.insert(modifiedEndResultData.end(), endResultData.begin(), endResultData.end());
+
+    vector<float> modifiedCurrentProgressData = { 0.0f };
+    modifiedCurrentProgressData.insert(modifiedCurrentProgressData.end(), currentProgressData.begin(), currentProgressData.end());
+
+    // Begin the ImPlot context (for plotting)
+    ImPlot::BeginPlot(title);
+
+    // Set the x and y axis limits, keeping the minimum as -0.01f
+    ImPlot::SetupAxesLimits(0.5f, (plotLims[0]) + 0.5f, -0.1f, plotLims[1] * 1.3f);
+
+    // Plot the "end result" data as bars, with the modified data
+    ImPlot::PlotBars(endResultName, modifiedEndResultData.data(), static_cast<int>(modifiedEndResultData.size()));
+
+    // Plot the "current progress" data as bars, with the modified data
+    ImPlot::PlotBars(currentProgressName, modifiedCurrentProgressData.data(), static_cast<int>(modifiedCurrentProgressData.size()));
+
+    // End the plot and window
+    ImPlot::EndPlot();
+}
+
+// Response plots code
+void RenderResponsePlots(const std::map<std::string, QuestionData>& plotData) {
+    static bool popupOpen = false;  // Control whether popup is open
+    static int currentPlotIndex = 0; // For navigating between plots
+
+    // Trigger popup opening based on a button press (or some other event)
+    if (ImGui::Button("Open Plot Window")) {
+        popupOpen = true;
+    }
+
+    // Ensure the popup window is open
+    if (popupOpen) {
+        ImGui::OpenPopup("Response Plot");
+    }
+
+    // Ensure the popup window is open and plotData is not empty
+    if (ImGui::BeginPopupModal("Response Plot", NULL)) {
+        // Convert the plot data into appropriate vectors
+        std::vector<std::string> questions;
+        std::vector<std::vector<int>> responses;
+        std::vector<std::vector<std::string>> allLabels;
+
+        for (const auto& entry : plotData) {
+            questions.push_back(entry.first);
+            responses.push_back(entry.second.responses);
+            allLabels.push_back(entry.second.labels);
+        }
+
+        // Ensure currentPlotIndex is within bounds
+        currentPlotIndex = std::clamp(currentPlotIndex, 0, static_cast<int>(questions.size()) - 1);
+
+        // Get the current question, responses, and labels
+        const std::string& currentQuestion = questions[currentPlotIndex];
+        const std::vector<int>& currentResponses = responses[currentPlotIndex];
+        const std::vector<std::string>& currentLabels = allLabels[currentPlotIndex];
+
+        // Loop through each label and replace spaces with newline characters
+        std::vector<std::string> modifiedLabels;
+        for (const auto& label : currentLabels) {
+            std::string modifiedLabel = label; // Make a copy of the label
+            std::replace(modifiedLabel.begin(), modifiedLabel.end(), ' ', '\n'); // Replace spaces with newlines
+            modifiedLabels.push_back(modifiedLabel);
+        }
+
+        // Find the maximum response value for the y-axis limit
+        float maxResponse = *std::max_element(currentResponses.begin(), currentResponses.end());
+
+        // Begin plotting
+        ImPlot::BeginPlot(("Responses: " + currentQuestion).c_str());
+
+        // Set up the axes and labels for the X and Y axes
+        ImPlot::SetupAxes("Response Labels", "Count", ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels, ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels);
+
+        ImPlot::SetupAxis(ImAxis_X1, "", ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels);
+        ImPlot::SetupAxis(ImAxis_Y1, "Response Count");
+
+        // Set the x and y axis limits
+        ImPlot::SetupAxesLimits(0.5f, static_cast<float>(currentResponses.size()) + 1.5f, maxResponse * -0.33f, maxResponse * 1.3f);
+
+        // Plot the bar chart for the current question's responses
+        ImPlot::PlotBars("Responses", currentResponses.data(), currentResponses.size(), 0.8f);  // 0.8f is the bar width
+
+        // Display the labels on the x-axis (adjust placement if needed)
+        for (size_t i = 0; i < modifiedLabels.size(); ++i) {
+            ImPlot::PlotText(modifiedLabels[i].c_str(), i + 1, -0.1f);  // Adjust text placement as needed
+        }
+
+        ImPlot::EndPlot();
+
+        // Display navigation buttons
+        if (ImGui::Button("Previous")) {
+            currentPlotIndex--;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Next")) {
+            currentPlotIndex++;
+        }
+
+        // Close button to exit the popup
+        if (ImGui::Button("Close")) {
+            ImGui::CloseCurrentPopup();
+            popupOpen = false;
+        }
+
+        ImGui::EndPopup(); // End of popup modal
+    }
+}
 
 
 
@@ -1175,7 +1161,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
     static bool displayError = false;
 
     if (selectedTestProgramIndex > 0) {
-        if (ImGui::Button("Make Plots")) {
+        if (ImGui::Button("Apply Filters")) {
             // Check if COI and MOE are selected properly
             if (selectedCOI > 0 && selectedMOE > 0) displayResponses = true;            
             else displayError = true;
@@ -1400,7 +1386,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
     static std::map<std::string, QuestionData> plotData;
 
-    bool plotGenerated = false;
+    static bool plotGenerated = false;
 
     if (displayResponses && selectedMOE > 0 && !filterComplete) {
         plotData = ProcessResponseData(testResponsePath, respondedEvents, responseTypes, selectedCOI, selectedMOE);
@@ -1410,19 +1396,15 @@ void MyApp::RenderAnalyzeSurveysPage() {
     
     if (!plotData.empty() && !plotGenerated) {
         // Generate plots if plotData not empty
-        cout << "Plotting" << endl;
+        // cout << "Plotting" << endl;
         RenderResponsePlots(plotData);
-        plotGenerated = true;
-    }
-    plotGenerated = true;
-    
+        // plotGenerated = true;
+    }    
 
     ImGui::NewLine();
     ImGui::Columns(1);
-    
-        
-    ImPlot::DestroyContext();
 
+    ImPlot::DestroyContext();        
 }
 
 
