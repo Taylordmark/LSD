@@ -419,12 +419,21 @@ void RenderResponsePlots(const std::map<std::string, QuestionData>& plotData) {
         ImPlot::EndPlot();
 
         ImGui::Text("Comments");
-        ImGui::NewLine();
+        
 
-        // Display the comments in the popup (two or three lines)
+        std::set<std::string> uniqueComments;
+        // Add each comment to the set to remove duplicates
         for (const auto& comment : currentComments) {
-            ImGui::Text("%s", comment.c_str());  // Display each comment as text
+            uniqueComments.insert(comment);
         }
+        // Display the unique comments in the popup
+        for (const auto& comment : uniqueComments) {
+            ImGui::Text("%s", comment.c_str());  // Display each unique comment as text
+        }
+        if (currentComments.empty()) {
+            ImGui::Text("None");
+        }
+        ImGui::NewLine();
 
         // Display navigation buttons
         if (ImGui::Button("Previous")) {
