@@ -62,6 +62,7 @@ struct ResponseTypeA {
 struct QuestionData {
     vector<string> labels;
     vector<int> responses;  // Responses (numeric values)
+    vector<string> comments;
 };
 
 vector<ResponseTypeA> responseTypes;
@@ -236,6 +237,7 @@ std::map<std::string, QuestionData> ProcessResponseData(const std::string& testR
                         auto questions = jsonData["questions"].get<std::vector<std::string>>();
                         auto responseTypeIDs = jsonData["responseTypes"].get<std::vector<std::string>>(); // response type IDs
                         auto responses = jsonData["responses"].get<std::vector<int>>(); // Numeric responses
+                        auto comment = jsonData["comment"];
 
                         std::cout << "Processing JSON data..." << std::endl;
                         // For each question, responseTypeID, response set
@@ -247,7 +249,7 @@ std::map<std::string, QuestionData> ProcessResponseData(const std::string& testR
                             std::cout << "Processing question: " << question << std::endl;
                             std::cout << "ResponseTypeID: " << responseTypeID << ", Response: " << response << std::endl;
 
-                            // Check if the question already exists in the map
+                            // If new question, set up the basics
                             if (questionResponses.find(question) == questionResponses.end()) {
                                 std::cout << "New question encountered: " << question << std::endl;
 
@@ -275,7 +277,7 @@ std::map<std::string, QuestionData> ProcessResponseData(const std::string& testR
                                 std::vector<int> r(c, 0);
 
                                 // Add the new question with an empty response count to the map
-                                questionResponses[question] = { l, r };
+                                questionResponses[question] = { l, r};
                                 std::cout << "Added new question to map: " << question << std::endl;
                             }
 
@@ -284,7 +286,9 @@ std::map<std::string, QuestionData> ProcessResponseData(const std::string& testR
                             r[response - 1] += 1;
                             cout << "Response is " << response << "... subtracting 1 then adding to index" << endl << endl;
                             std::cout << "Incremented response for question: " << question << " to count: " << r[response - 1] << std::endl;
-                        }
+                            
+                            questionResponses[question].comments.push_back(comment);
+                        }   
                     }
                 }
             }
@@ -301,6 +305,10 @@ std::map<std::string, QuestionData> ProcessResponseData(const std::string& testR
         std::cout << endl << "Responses: ";
         for (const auto& response : entry.second.responses) {
             std::cout << response << " ";
+        }
+        std::cout << endl << "Comments: ";
+        for (const auto& response : entry.second.comments) {
+            std::cout << response << "\n ";
         }
         std::cout << std::endl << endl;
     }
@@ -353,25 +361,29 @@ void RenderResponsePlots(const std::map<std::string, QuestionData>& plotData) {
     }
 
     // Ensure the popup window is open and plotData is not empty
+    // Ensure the popup window is open and plotData is not empty
     if (ImGui::BeginPopupModal("Response Plot", NULL)) {
         // Convert the plot data into appropriate vectors
         std::vector<std::string> questions;
         std::vector<std::vector<int>> responses;
         std::vector<std::vector<std::string>> allLabels;
+        std::vector<std::vector<std::string>> allComments;  // Add a vector for comments
 
         for (const auto& entry : plotData) {
             questions.push_back(entry.first);
             responses.push_back(entry.second.responses);
             allLabels.push_back(entry.second.labels);
+            allComments.push_back(entry.second.comments);  // Retrieve the comments
         }
 
         // Ensure currentPlotIndex is within bounds
         currentPlotIndex = std::clamp(currentPlotIndex, 0, static_cast<int>(questions.size()) - 1);
 
-        // Get the current question, responses, and labels
+        // Get the current question, responses, labels, and comments
         const std::string& currentQuestion = questions[currentPlotIndex];
         const std::vector<int>& currentResponses = responses[currentPlotIndex];
         const std::vector<std::string>& currentLabels = allLabels[currentPlotIndex];
+        const std::vector<std::string>& currentComments = allComments[currentPlotIndex];  // Get comments
 
         // Loop through each label and replace spaces with newline characters
         std::vector<std::string> modifiedLabels;
@@ -405,6 +417,14 @@ void RenderResponsePlots(const std::map<std::string, QuestionData>& plotData) {
         }
 
         ImPlot::EndPlot();
+
+        ImGui::Text("Comments");
+        ImGui::NewLine();
+
+        // Display the comments in the popup (two or three lines)
+        for (const auto& comment : currentComments) {
+            ImGui::Text("%s", comment.c_str());  // Display each comment as text
+        }
 
         // Display navigation buttons
         if (ImGui::Button("Previous")) {
