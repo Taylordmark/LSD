@@ -629,7 +629,7 @@ void MyApp::RenderCompleteSurveysPage() {
                 MOPValues["metadata"] = metadata;
 
                 // Add comments to MOPS
-                MOPValues["Comment"] = comments[MOPID];
+                MOPValues["comment"] = comments[MOPID];
 
                 // Save survey and check if it was successful
                 if (saveSurvey(MOPID, MOPValues) == 0) {
