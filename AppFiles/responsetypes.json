@@ -1,35 +1,52 @@
 {
 "responseTypes":[
 	{
-	"id":"agreement_7Point",
+	"id":"Likert 7 Point Agreement",
 	"count":7,
 	"labels": ["Strongly Disagree","Disagree","Somewhat Disagree","Neither Agree Nor Disagree","Somewhat Agree","Agree","Strongly Agree"]
 	},
 	{
-	"id":"userDemand_9Point",
+	"id":"Likert 9 Point User Demand",
 	"count":9,
 	"labels": ["Very Low","Neutral","Very High"]
 	},
 	{
-	"id":"acceptability_5Point_NA",
+	"id":"Likert 5 Point Acceptability",
 	"count":6,
 	"labels": ["Did Not Use","Completely Unnacceptable","Largely Unacceptable","Somewhat Unacceptable","Somewhat Acceptable","Largely Acceptable","Completely Acceptable"]
 	},
 	{
-	"id":"agreement_5Point",
+	"id":"Likert 5 Point Agreement",
 	"count":5,
 	"labels": ["Disagree","Somewhat Disagree","Neither Agree Nor Disagree","Somewhat Agree", "Agree"]
 	},
 	{
-	"id":"satisfactory_5Point",
+	"id":"Likert 5 Point Satisfactory",
 	"count":5,
 	"labels": ["Very Unsatisfactory","Neutral","Very Satisfactory"]
 	},
 	{
-	"id":"lowMedHigh_5Point",
+	"id":"Likert 5 Point Low to High",
 	"count":5,
 	"labels": ["Very Low","Neutral","Very High"]
-	}
-]
+	},
+	{
+	"id":"Floating Point Average",
+	"threshold_type": "average",
+	"threshold": 0
+	},
+	{
+	"id":"Floating Point Max",
+	"threshold_type": "Maximum",
+	"threshold": 0,
+	"notes": "Use where goal is low values, checks if values exceed your threshold"
+	},
+	{
+	"id":"Floating Point Min",
+	"threshold_type": "Minimum",
+	"threshold": 0,
+	"notes": "Use where goal is high values, checks if values are lower than your threshold"
+	},
+]	
 }
 
