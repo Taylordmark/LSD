@@ -37,7 +37,6 @@ using std::cout;
 
 
 static string responsesPath = "C:/LSD/AppFiles/Responses";
-static string responseTypesPath = "C:/LSD/AppFiles/responsetypes.json";
 static string testProgramsPath = "C:/LSD/AppFiles/TestPrograms";
 
 // Data to show correct survey
@@ -186,11 +185,6 @@ void GetResponseTypes(const string& filename) {
     }
 }
 
-
-
-
-
-
 // Function to retrieve the response data for each file
 std::map<std::string, QuestionData> ProcessResponseData(const std::string& testResponsePath, const std::vector<std::string>& respondedEvents,
     const std::vector<ResponseTypeA>& responseTypes, int selectedCOI, int selectedMOE) {
@@ -316,24 +310,72 @@ std::map<std::string, QuestionData> ProcessResponseData(const std::string& testR
     return questionResponses;
 }
 
-
-
 // Bar plot code
-void RenderProgressBars(const vector<float>& endResultData, const vector<float>& currentProgressData,
-    const char* title, const char* endResultName, const char* currentProgressName, const vector<float>& plotLims) {
+void RenderProgressBars(const std::map<std::string, int>& surveyPlotData,
+    const std::map<std::string, int>& responsesPlotData,
+    const char* title,
+    const char* endResultName,
+    const char* currentProgressName,
+    const std::vector<float>& plotLims) {
 
-    // Insert 0 at the beginning of both endResultData and currentProgressData
-    vector<float> modifiedEndResultData = { 0.0f };
-    modifiedEndResultData.insert(modifiedEndResultData.end(), endResultData.begin(), endResultData.end());
+    // Extract the keys and values from surveyPlotData and responsesPlotData
+    std::vector<std::string> surveyKeys;
+    std::vector<int> surveyValues;
 
-    vector<float> modifiedCurrentProgressData = { 0.0f };
-    modifiedCurrentProgressData.insert(modifiedCurrentProgressData.end(), currentProgressData.begin(), currentProgressData.end());
+    for (const auto& entry : surveyPlotData) {
+        surveyKeys.push_back(entry.first);
+        surveyValues.push_back(entry.second);
+    }
+
+    std::vector<std::string> responsesKeys;
+    std::vector<int> responsesValues;
+
+    for (const auto& entry : responsesPlotData) {
+        responsesKeys.push_back(entry.first);
+        responsesValues.push_back(entry.second);
+    }
+
+    /*
+
+    // Print the extracted survey data
+    std::cout << "Survey Data:" << std::endl;
+    for (size_t i = 0; i < surveyKeys.size(); ++i) {
+        std::cout << "  Key: " << surveyKeys[i] << ", Value: " << surveyValues[i] << std::endl;
+    }
+
+    // Print the extracted responses data
+    std::cout << "Responses Data:" << std::endl;
+    for (size_t i = 0; i < responsesKeys.size(); ++i) {
+        std::cout << "  Key: " << responsesKeys[i] << ", Value: " << responsesValues[i] << std::endl;
+    }
+    */
+
+    // Insert 0 at the beginning of both endResultData and currentProgressData (assuming these are defined elsewhere)
+    std::vector<float> modifiedEndResultData = { 0.0f };
+    modifiedEndResultData.insert(modifiedEndResultData.end(), surveyValues.begin(), surveyValues.end());
+
+    std::vector<float> modifiedCurrentProgressData = { 0.0f };
+    modifiedCurrentProgressData.insert(modifiedCurrentProgressData.end(), responsesValues.begin(), responsesValues.end());
+
+
+    /*
+    // Print the modified data for end result and current progress
+    std::cout << "\nModified End Result Data:" << std::endl;
+    for (const auto& value : modifiedEndResultData) {
+        std::cout << "  " << value << std::endl;
+    }
+
+    std::cout << "\nModified Current Progress Data:" << std::endl;
+    for (const auto& value : modifiedCurrentProgressData) {
+        std::cout << "  " << value << std::endl;
+    }
+    */
 
     // Begin the ImPlot context (for plotting)
     ImPlot::BeginPlot(title);
 
     // Set the x and y axis limits, keeping the minimum as -0.01f
-    ImPlot::SetupAxesLimits(0.5f, (plotLims[0]) + 0.5f, -0.1f, plotLims[1] * 1.3f);
+    ImPlot::SetupAxesLimits(0.5f, plotLims[0] + 0.5f, -0.1f, plotLims[1] * 1.3f);
 
     // Plot the "end result" data as bars, with the modified data
     ImPlot::PlotBars(endResultName, modifiedEndResultData.data(), static_cast<int>(modifiedEndResultData.size()));
@@ -515,50 +557,76 @@ void MyApp::RenderAnalyzeSurveysPage() {
     // If a test program is selected, change selectedTestProgram to match (for path retrieval)
     if (selectedTestProgramIndex > 0) { selectedTestProgram = testPrograms[selectedTestProgramIndex]; }
 
-    // After selection, fill test events, dataMap, responded events
+    // List of all COIs, MOEs, DSPs that exist in the selected test program
+    static map<string, map<string, map<string, int>>> programMap;
+    // List of all COIs, MOEs, DSPs that exist in the selected test program responses
+    static map<string, map<string, map<string, int>>> responsesMap;
+    // List of test event folder names that appear in selected test program
     static vector<string> allTestEvents;
-    static map<string, map<string, vector<string>>> dataMap;
+    // List of test event folder names that have responses in selected test program
     static vector<string> respondedEvents;
 
     // Set up aggregate COI variables for plot
-    static map<int, int> COISurveyCounts;
-    static map<int, int> COIResponseCounts;
+    static map<int, int> testProgramSurveyCounts;
+    static map<int, int> testProgramResponseCounts;
 
     // Values for counts after filtering
-    static vector<float> filteredSurveyCounts;
-    static vector<float> filteredResponseCounts;
-    static vector<float> filteredSurveysRemaining;
+    static map<string, int> filteredSurveyCounts;
+    static map<string, int> filteredResponseCounts;
 
     static bool filterComplete = false;
-    
-    // Set test program path using Dropdown value
+
+    // Set test program paths using Dropdown value
     string testProgramPath = testProgramsPath + "/" + selectedTestProgram;
-    string testResponsePath = responsesPath + "/" + selectedTestProgram;
+    string testResponsesPath = responsesPath + "/" + selectedTestProgram;
 
-    // If test events have not been loaded and a test program is selected, load test events from TestProgram/Program path
+    // On Refresh, fill the programMap and responsesMap
     if ((allTestEvents.empty() or pageRefresh or respondedEvents.empty()) && selectedTestProgramIndex > 0) {
-        allTestEvents = GetSurveyFolders(testProgramPath);        
 
-        // Clear dataMap and COISurveyCounts
-        dataMap.clear();
-        COISurveyCounts.clear();
+        string responseTypesPath = testProgramPath + "/" + "responsetypes.json";
 
-        // for each test event, tokenize it based on underscores and add to dataMap
-        for (const auto& event : allTestEvents) {
+        if (responseTypes.empty()) GetResponseTypes(responseTypesPath);
+
+        // Test event folder names
+        allTestEvents = GetSurveyFolders(testProgramPath);
+
+        // Get all responded events
+        respondedEvents = GetSurveyFolders(testResponsesPath);
+
+        // Reset maps
+        programMap.clear();
+        responsesMap.clear();
+
+        // tokenize each test event based on underscores and add to maps
+        for (const string& event : allTestEvents) {
+
+            string eventSurveysPath = testProgramPath + "/" + event;
+            string eventResponsesPath = testResponsesPath + "/" + event;
 
             vector<string> parts = SplitStringByDelimiter(event, '_');
 
-            // Ensure we have at least 4 parts (A, B, C, D, N)
+            // If correct format, add to dataMap
             if (parts.size() >= 5) {
                 try {
-                    // Store parts B, C, D (i.e., parts[1], parts[2], parts[3]) as strings
+                    // Get COI, MOE, DSP, minCount from testEvent folder name
                     string coiValue = parts[1];
                     string mopsValue = parts[2];
                     string dspsValue = parts[3];
-                    string minCount = parts[4];
+                    int minCount = std::stoi(parts[4]);
 
-                    // Use the nested map structure to store COIS, MOES, DSPS
-                    dataMap[coiValue][mopsValue].push_back(dspsValue);
+                    // Count MOP files in test event folder
+                    int mopCount = CountFilesInFolder(eventSurveysPath);
+
+                    // Use the nested map structure to store COIS, MOES, DSPS, surveysRequired in both maps
+                    programMap[coiValue][mopsValue][dspsValue] = minCount * mopCount;
+
+                    // If the event has responses, do the same for responsesMap
+                    if (std::find(respondedEvents.begin(), respondedEvents.end(), event) != respondedEvents.end()) {
+
+                        // Count response files in the responses folder
+                        int responseCount = CountFilesInFolder(eventResponsesPath);
+                        responsesMap[coiValue][mopsValue][dspsValue] = responseCount;
+                    }
                 }
 
                 catch (const std::invalid_argument&) {
@@ -567,97 +635,13 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 catch (const std::out_of_range&) {
                     std::cerr << "Number out of range in event: " << event << std::endl;
                 }
-
-                // Extract the number after the last underscore
-                size_t pos = event.rfind('_');
-                if (pos != string::npos) {
-                    string numberStr = event.substr(pos + 1);  // Get the part after the last underscore
-
-                    // Count the number of files in the event's folder
-                    string eventFolderPath = testProgramsPath + "/" + selectedTestProgram + "/" + event;
-                    int fileCount = CountFilesInFolder(eventFolderPath);
-
-                    // Multiply the number by the file count
-                    try {
-                        int number = std::stoi(numberStr);  // Convert to integer
-                        int result = number * fileCount;
-
-                        // Get the second character of the event value (for COISurveyCounts key)
-                        if (event.length() > 1) {
-                            char coiIndexChar = event[1];
-                            int coiIndex = coiIndexChar - '1';
-
-                            if (COISurveyCounts.contains(coiIndex)) {
-                                COISurveyCounts[coiIndex] += result;
-                            }
-                            else {
-                                COISurveyCounts[coiIndex] = result;
-                            }
-                        }
-                    }
-                    catch (const std::invalid_argument& e) {
-                        std::cerr << "Invalid number format after last underscore in event: " << event << std::endl;
-                    }
-                    catch (const std::out_of_range& e) {
-                        std::cerr << "Number out of range after last underscore in event: " << event << std::endl;
-                    }
-                }
             }
         }
-
-        respondedEvents = GetSurveyFolders(testResponsePath);
-
-        COIResponseCounts.clear();
-
-        for (const auto& event : respondedEvents) {
-
-            // Count the number of files in the event's folder
-            string eventFolderPath = testResponsePath + "/" + event;
-            int fileCount = CountFilesInFolder(eventFolderPath);
-
-            // Get the second character of the event value
-            if (event.length() > 1) {
-                char coiIndexChar = event[1];
-                int coiIndex = coiIndexChar - '1';
-
-                if (COIResponseCounts.contains(coiIndex)) {
-                    COIResponseCounts[coiIndex] += fileCount;
-                }
-                else { COIResponseCounts[coiIndex] = fileCount; }
-            }
-        }
-    }
-
-    // If both are filled, do math for percent completion by COI and totals
-    if (!allTestEvents.empty() && !respondedEvents.empty()) {
-
-        static int totalSurveys;
-        static int totalResponses;
-
-        // Calculate the completion percentages for each COI
-        std::vector<float> coiCompletionPercentages;
-        float totalCompletionPercentage = 0.0f;
-
-        // Calculate individual COI completion percentages and total completion
-        for (int i = 0; i < COISurveyCounts.size(); ++i) {
-            // Avoid division by zero and calculate completion percentage
-            if (COIResponseCounts.contains(i) && COIResponseCounts[i] > 0) {
-                float completionPercentage = static_cast<float>(COIResponseCounts[i]) / static_cast<float>(COISurveyCounts[i]) * 100.0f;
-                coiCompletionPercentages.push_back(completionPercentage);
-                totalResponses += COIResponseCounts[i];
-            }
-            else {
-                coiCompletionPercentages.push_back(0.0f);
-            }
-            totalSurveys += COISurveyCounts[i];
-        }
-
-        // Calculate the total completion percentage for all COIs
-        float totalCompletion = (totalResponses / totalSurveys) * 100.0f;
     }
 
     // Get response types key, value data
-    if (responseTypes.empty()) GetResponseTypes(responseTypesPath);
+    string responseTypesPath = testProgramPath + "/" + "responsetypes.json";
+    
     
     pageRefresh = false;
 
@@ -705,18 +689,19 @@ void MyApp::RenderAnalyzeSurveysPage() {
         ImGui::Text("COI"); ImGui::NewLine();
 
         COIS.push_back("No Selection");
-        for (const auto& pair : dataMap) COIS.push_back(pair.first);
+        for (const auto& pair : programMap) COIS.push_back(pair.first);
         ImGui::SetNextItemWidth(200.0f);
         selectedCOI = RenderDropdown(COIS, "COIS", selectedCOI);
         if (selectedCOI != lastCOIIndex) selectedMOE = 0; selectedDSP = 0;
 
     }
-    
+    else selectedCOI = 0;
+
     // If COI is selected show MOES dropdown, otherwise lower filters set to 0
     if (selectedCOI > 0) {
         ImGui::Text("Measure of Effectiveness"); ImGui::NewLine();
         MOES.push_back("No Selection");
-        for (const auto& pair : dataMap[std::to_string(selectedCOI)]) MOES.push_back(pair.first);
+        for (const auto& pair : programMap[std::to_string(selectedCOI)]) MOES.push_back(pair.first);
         ImGui::SetNextItemWidth(200.0f);
         selectedMOE = RenderDropdown(MOES, "MOES", selectedMOE);
         if (selectedMOE != lastMOEIndex) selectedDSP = 0;
@@ -726,10 +711,12 @@ void MyApp::RenderAnalyzeSurveysPage() {
     // If MOES is selected show DSP dropdown, otherwise set DSP filter to 0
     if (selectedMOE > 0) {
         ImGui::Text("Design Point"); ImGui::NewLine();
-        DSPS = dataMap[std::to_string(selectedCOI)][std::to_string(selectedMOE)];
-        DSPS.insert(DSPS.begin(), "No Selection");
+        DSPS.push_back("No Selection");
+        for (const auto& pair : programMap[std::to_string(selectedCOI)][std::to_string(selectedMOE)]) DSPS.push_back(pair.first);
         ImGui::SetNextItemWidth(200.0f);
-        selectedDSP = RenderDropdown(DSPS, "DSPS", selectedDSP);
+        selectedDSP = RenderDropdown(MOES, "DSPS", selectedDSP);
+        if (selectedMOE != lastMOEIndex) selectedDSP = 0;
+        
     }
     else selectedDSP = 0;
 
@@ -741,26 +728,26 @@ void MyApp::RenderAnalyzeSurveysPage() {
         lastMOEIndex = selectedMOE;
         lastDSPIndex = selectedDSP;
         filterComplete = false;
+        cout << "Clearing" << endl;
     }
 
+
     ImGui::NewLine();
     ImGui::NewLine();
     ImGui::NewLine();
 
-    ImGui::BeginChild("Survey Statistics");
-    // If test events is filled and Test Program is selected, run plot logic
+    ImGui::BeginChild("Surveys Summary Statistics");
+
+    // If test events is filled and Test Program is selected, run summary plot logic
     if (!allTestEvents.empty() && selectedTestProgramIndex != 0) {
-
-        // if no COI is selected - get all data by COI and plot
+        // If Program selected, plot data by COI
         if (selectedCOI == 0) {
 
-            // Fill data
+            // Fill filteredSurveyCounts with last val of test event name * MOP files in folder
             if (filteredSurveyCounts.empty()) {
-                // Fill filteredSurveyCounts with data by COI
-                const int dataMapSize = static_cast<int>(dataMap.size());
-                
-                // Iterate through COIs
-                for (const auto& COIpair : dataMap) {
+
+                // Iterate through COIs to add vals at index
+                for (const auto& COIpair : programMap) {
                     auto COI = COIpair.first;
 
                     // Iterate through test events
@@ -769,59 +756,73 @@ void MyApp::RenderAnalyzeSurveysPage() {
                         vector<string> parts = SplitStringByDelimiter(event, '_');
 
                         // If test event is part of current COI iteration
-                        if (parts.size() > 1 && parts[1] == COI) {
+                        if (parts[1] == COI) {
+                            auto MOE = parts[2];
+                            auto DSP = parts[3];
 
-                            string sPath = testProgramPath + "/" + event + "/";
-                            int mopcount = CountFilesInFolder(sPath);
-                            int index = (std::stoi(parts[1]) - 1); // Get the index from the last part of the string
-                            float valueToAdd = std::stof(parts.back()); // Convert the last part to integer (for the value)
-
-                            // Ensure filteredSurveyCounts has enough space
-                            if (index >= filteredSurveyCounts.size()) {
-                                filteredSurveyCounts.resize(index + 1, 0); // Resize and initialize new elements to 0
+                            // Ensure filteredSurveyCounts has the proper index (COI)
+                            if (filteredSurveyCounts.find(COI) == filteredSurveyCounts.end()) {
+                                // Initialize COI in filteredSurveyCounts if it doesn't exist
+                                filteredSurveyCounts[COI] = 0;
                             }
-                            filteredSurveyCounts[index] += valueToAdd * mopcount;  // Add the value to the appropriate index
+
+                            // Add the value from dataMap to the filteredSurveyCounts map for the current COI
+                            filteredSurveyCounts[COI] += programMap[COI][MOE][DSP];  // Add the value to the appropriate index
                         }
                     }
+                }
+            }
+
+            // Fill filteredSurveyCounts with num responses in applicable test events
+            if (filteredResponseCounts.empty()) {
+
+                // Add keys from Survey Counts to Response Counts
+                for (const auto& k : filteredSurveyCounts) {
+                    const std::string& key = k.first;
+                    if (filteredResponseCounts.find(key) == filteredResponseCounts.end()) {
+                        // Add the key to filteredResponseCounts with a default value of 0
+                        filteredResponseCounts[key] = 0;
+                    }
+                }                
+               
+                // Iterate through COIs
+                for (const auto& COIpair : responsesMap) {
+                    auto COI = COIpair.first;
 
                     // Iterate through responses
                     for (const auto& event : respondedEvents) {
                         // Split the event string by underscores
                         vector<string> parts = SplitStringByDelimiter(event, '_');
 
-                        // If response is a part of COI, add number of responses
-                        if (parts.size() > 1 && parts[1] == COI) {
-                            int index = (std::stoi(parts[1]) - 1);  // Get the index from the second part of the string (assuming index is at parts[1])
+                        // If test event is part of current COI iteration
+                        if (parts[1] == COI) {
+                            auto MOE = parts[2];
+                            auto DSP = parts[3];
+                                                        
+                            // Ensure filteredSurveyCounts has the proper index (COI)
+                            if (filteredResponseCounts.find(COI) == filteredResponseCounts.end()) {
+                                // Initialize COI in filteredSurveyCounts if it doesn't exist
+                                filteredResponseCounts[COI] = 0;
+                            }                            
 
-                            string rPath = testProgramPath + "/" + event + "/";                                                       
-                            int valueToAdd = CountFilesInFolder(rPath);
-
-                            // Ensure filteredResponseCounts has enough space
-                            if (index >= filteredResponseCounts.size()) {
-                                filteredResponseCounts.resize(index + 1, 0);  // Resize and initialize new elements to 0
-                            }
-                            filteredResponseCounts[index] += valueToAdd;  // Add the value to the appropriate index
+                            // Add the value from dataMap to the filteredSurveyCounts map for the current COI
+                            filteredResponseCounts[COI] += responsesMap[COI][MOE][DSP];  // Add the value to the appropriate index
                         }
                     }
-                }
-
-                // Subtract responses from total to get remaining -> filteredSurveysRemaining
-                size_t minLength = std::min(filteredSurveyCounts.size(), filteredResponseCounts.size());
-                filteredSurveysRemaining = filteredSurveyCounts;
-
-                for (size_t i = 0; i < minLength; ++i) {
-                    filteredSurveysRemaining[i] -= filteredResponseCounts[i];
                 }
             }
 
             // Plot data
             if (!filteredSurveyCounts.empty()) {
-                // Get y lim
-                float max_survey_value = *std::max_element(filteredSurveyCounts.begin(), filteredSurveyCounts.end());
+                // Get max survey value (y lim)
+                float max_survey_value = std::max_element(filteredSurveyCounts.begin(), filteredSurveyCounts.end(),
+                    [](const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
+                        return a.second < b.second; // Compare the `second` value (survey count) of each pair
+                    })->second;  // Extract the `second` (survey count) of the max element
 
                 // Set plotLims with max values
                 vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
-                                
+
                 // Changed back to filtered survey counts
                 RenderProgressBars(filteredSurveyCounts, filteredResponseCounts, "Survey Completion by \n Critical Operational Issue",
                     "Total Surveys to Complete", "Surveys Administered", plotLims);
@@ -829,15 +830,19 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
         }
 
-        // If no MOE selected - get all data by MOE and plot
+        // If COI selected, plot data by MOE
         if (selectedCOI != 0 && selectedMOE == 0) {
 
+            string COI = std::to_string(selectedCOI);
+            cout << "Selected COI is " << COI << endl;
+
+            // Fill filteredSurveyCounts with last val of test event name * MOP files in folder
             if (filteredSurveyCounts.empty()) {
 
                 // Fill filteredSurveyCounts with data by MOE
-                map<string, vector<string>> COIMAP = dataMap[std::to_string(selectedCOI)];
-                const int COIMapSize = static_cast<int>(COIMAP.size());
-                for (const auto& MOEpair : COIMAP) {
+                map<string, map<string, int>> currentCOIMAP = programMap[COI];
+
+                for (const auto& MOEpair : currentCOIMAP) {
                     auto MOE = MOEpair.first;
 
                     // Add survey counts to the survey counter vector
@@ -846,51 +851,72 @@ void MyApp::RenderAnalyzeSurveysPage() {
                         vector<string> parts = SplitStringByDelimiter(event, '_');
 
                         // If test event is part of selected COI and current MOE iteration
-                        if (parts.size() > 2 && parts[1] == std::to_string(selectedCOI) && parts[2] == MOE) {
-                            string sPath = testProgramPath + "/" + event + "/";
-                            int mopcount = CountFilesInFolder(sPath);
-                            int index = (std::stoi(parts[2]) - 1); // Get the index from the third part of the string
-                            float valueToAdd = std::stof(parts.back()); // Convert the last part to integer (for the value)
+                        if (parts.size() > 2 && parts[1] == COI && parts[2] == MOE) {
+                            auto DSP = parts[3];
+                            // Ensure filteredSurveyCounts has the proper index (COI)
+                            if (filteredSurveyCounts.find(MOE) == filteredSurveyCounts.end()) {
+                                // Initialize COI in filteredSurveyCounts if it doesn't exist
+                                filteredSurveyCounts[MOE] = 0;
 
-                            // Ensure filteredSurveyCounts has enough space
-                            if (index >= filteredSurveyCounts.size()) {
-                                filteredSurveyCounts.resize(index + 1, 0); // Resize and initialize new elements to 0
+                                cout << "MOE " << MOE << " is in the keys" << endl;
                             }
-                            filteredSurveyCounts[index] += valueToAdd * mopcount;  // Add the value to the appropriate index                          
-                        }
-                    }
 
-                    // Add response counts to the responses counter vector
+                            // Add the value from dataMap to the filteredSurveyCounts map for the current COI
+                            filteredSurveyCounts[MOE] += programMap[COI][MOE][DSP];  // Add the value to the appropriate index
+                        }
+
+
+                    }
+                }
+            }
+
+            // Fill filteredSurveyCounts with num responses in applicable test events
+            if (filteredResponseCounts.empty()) {
+
+                // Add keys from Survey Counts to Response Counts
+                for (const auto& k : filteredSurveyCounts) {
+                    const std::string& key = k.first;
+                    if (filteredResponseCounts.find(key) == filteredResponseCounts.end()) {
+                        // Add the key to filteredResponseCounts with a default value of 0
+                        filteredResponseCounts[key] = 0;
+                    }
+                }
+
+                // Fill filteredSurveyCounts with data by MOE
+                map<string, map<string, int>> currentCOIMAP = responsesMap[std::to_string(selectedCOI)];
+
+                for (const auto& MOEpair : currentCOIMAP) {
+                    auto MOE = MOEpair.first;
+
+                    // Add survey counts to the survey counter vector
                     for (const auto& event : respondedEvents) {
                         // Split the event string by underscores
                         vector<string> parts = SplitStringByDelimiter(event, '_');
 
-                        // If response is a part of MOE, add number of responses
-                        if (parts.size() > 2 && parts[1] == std::to_string(selectedCOI) && parts[2] == MOE) {
-                            int index = (std::stoi(parts[2]) - 1);  // Get the index from the third part of the string                            
-                            string rPath = testProgramPath + "/" + event + "/";
-                            int valueToAdd = CountFilesInFolder(rPath);
-
-                            // Ensure filteredResponseCounts has enough space
-                            if (index >= filteredResponseCounts.size()) {
-                                filteredResponseCounts.resize(index + 1, 0);  // Resize and initialize new elements to 0
+                        // If test event is part of selected COI and current MOE iteration
+                        if (parts.size() > 2 && parts[1] == COI && parts[2] == MOE) {
+                            auto DSP = parts[3];
+                            // Ensure filteredSurveyCounts has the proper index (COI)
+                            if (filteredResponseCounts.find(MOE) == filteredResponseCounts.end()) {
+                                // Initialize COI in filteredResponseCounts if it doesn't exist
+                                filteredResponseCounts[MOE] = 0;
                             }
-                            filteredResponseCounts[index] += valueToAdd;  // Add the value to the appropriate index
+
+                            // Add the value from dataMap to the filteredResponseCounts map for the current COI
+                            filteredResponseCounts[MOE] += responsesMap[COI][MOE][DSP];  // Add the value to the appropriate index
+                            cout << "Adding values to COI " << MOE << " of " << responsesMap[COI][MOE][DSP] << endl;
                         }
                     }
                 }
-
-                // Subtract responses from total to get remaining -> filteredSurveysRemaining
-                size_t minLength = std::min(filteredSurveyCounts.size(), filteredResponseCounts.size());
-                filteredSurveysRemaining = filteredSurveyCounts;
-                for (size_t i = 0; i < minLength; ++i) {
-                    filteredSurveysRemaining[i] -= filteredResponseCounts[i];
-                }
             }
 
+            // Make the plot
             if (!filteredSurveyCounts.empty()) {
-                // Get y lim
-                float max_survey_value = *std::max_element(filteredSurveyCounts.begin(), filteredSurveyCounts.end());
+                // Get max survey value (y lim)
+                float max_survey_value = std::max_element(filteredSurveyCounts.begin(), filteredSurveyCounts.end(),
+                    [](const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
+                        return a.second < b.second; // Compare the `second` value (survey count) of each pair
+                    })->second;  // Extract the `second` (survey count) of the max element
 
                 // Set plotLims with max values
                 vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
@@ -900,15 +926,20 @@ void MyApp::RenderAnalyzeSurveysPage() {
             }
         }
 
-        // If no DSP is selected - get all data by Design point and plot response counts with labels from response types
+        // If MOE selected, plota data by DSP
         if (selectedMOE != 0 && selectedDSP == 0) {
+            
+            string COI = std::to_string(selectedCOI);
+            string MOE = std::to_string(selectedMOE);
 
+            // Fill filteredSurveyCounts with last val of test event name * MOP files in folder
             if (filteredSurveyCounts.empty()) {
 
-                // Fill filteredSurveyCounts with data by MOP
-                vector<string> MOPMap = dataMap[std::to_string(selectedCOI)][std::to_string(selectedMOE)];
-                const int MOPMapSize = MOPMap.size();
-                for (const auto& DSP : MOPMap) {
+                // Fill filteredSurveyCounts with data by DSP
+                map<string, int> currentMOEMap = programMap[COI][MOE];
+
+                for (const auto& MOEpair : currentMOEMap) {
+                    auto DSP = MOEpair.first;
 
                     // Add survey counts to the survey counter vector
                     for (const auto& event : allTestEvents) {
@@ -916,52 +947,61 @@ void MyApp::RenderAnalyzeSurveysPage() {
                         vector<string> parts = SplitStringByDelimiter(event, '_');
 
                         // If event is a part of selected COI and selected MOP and DSP (of loop) add last part of folder name to counter for DSP index
-                        if (parts.size() > 3 && parts[1] == std::to_string(selectedCOI) && parts[2] == std::to_string(selectedMOE) && parts[3] == DSP) {
-                            int index = (std::stoi(parts[3]) - 1); // Get the DSP index
-                            string sPath = testProgramPath + "/" + event + "/";
-                            int mopcount = CountFilesInFolder(sPath);
-                            float valueToAdd = std::stof(parts.back()); // Convert the last part to integer (for the value)
-
-                            // Ensure filteredSurveyCounts has enough space
-                            if (index >= filteredSurveyCounts.size()) {
-                                filteredSurveyCounts.resize(index + 1, 0); // Resize and initialize new elements to 0
+                        if (parts.size() > 3 && parts[1] == COI && parts[2] == MOE && parts[3] == DSP) {
+                            if (filteredSurveyCounts.find(DSP) == filteredSurveyCounts.end()) {
+                                // Initialize COI in filteredSurveyCounts if it doesn't exist
+                                filteredSurveyCounts[DSP] = 0;
                             }
-                            filteredSurveyCounts[index] += valueToAdd * mopcount;  // Add the value to the appropriate index
+                            // Add the value from dataMap to the filteredSurveyCounts map for the current COI
+                            filteredSurveyCounts[DSP] += programMap[COI][MOE][DSP];  // Add the value to the appropriate index
                         }
                     }
+                }
+            }
 
-                    // Add response counts to the responses counter vector
+            // Fill filteredSurveyCounts with num responses in applicable test events
+            if (filteredResponseCounts.empty()) {
+
+                // Add keys from Survey Counts to Response Counts
+                for (const auto& k : filteredSurveyCounts) {
+                    const std::string& key = k.first;
+                    if (filteredResponseCounts.find(key) == filteredResponseCounts.end()) {
+                        // Add the key to filteredResponseCounts with a default value of 0
+                        filteredResponseCounts[key] = 0;
+                    }
+                }
+
+                // Fill filteredSurveyCounts with data by DSP
+                map<string, int> currentMOEMap = responsesMap[COI][MOE];
+
+                for (const auto& MOEpair : currentMOEMap) {
+                    auto DSP = MOEpair.first;
+
+                    // Add survey counts to the survey counter vector
                     for (const auto& event : respondedEvents) {
                         // Split the event string by underscores
                         vector<string> parts = SplitStringByDelimiter(event, '_');
 
-                        // If response is a part of MOP, add number of responses
-                        if (parts.size() > 3 && parts[1] == std::to_string(selectedCOI) && parts[2] == std::to_string(selectedMOE) && parts[3] == DSP) {
-                            // DSP index from third part
-                            int index = (std::stoi(parts[3]) - 1);
-                            string rPath = testProgramPath + "/" + event + "/";
-                            int valueToAdd = CountFilesInFolder(rPath);
-
-                            // Ensure filteredResponseCounts has enough space
-                            if (index >= filteredResponseCounts.size()) {
-                                filteredResponseCounts.resize(index + 1, 0);  // Resize and initialize new elements to 0
+                        // If event is a part of selected COI and selected MOP and DSP (of loop) add last part of folder name to counter for DSP index
+                        if (parts.size() > 3 && parts[1] == COI && parts[2] == MOE && parts[3] == DSP) {
+                            if (filteredResponseCounts.find(DSP) == filteredResponseCounts.end()) {
+                                // Initialize COI in filteredSurveyCounts if it doesn't exist
+                                filteredResponseCounts[DSP] = 0;
                             }
-                            filteredResponseCounts[index] += valueToAdd;  // Add the value to the appropriate index
+                            // Add the value from dataMap to the filteredSurveyCounts map for the current COI
+                            filteredResponseCounts[DSP] += responsesMap[COI][MOE][DSP];  // Add the value to the appropriate index
                         }
                     }
                 }
-
-                // Subtract responses from total to get remaining -> filteredSurveysRemaining
-                size_t minLength = std::min(filteredSurveyCounts.size(), filteredResponseCounts.size());
-                filteredSurveysRemaining = filteredSurveyCounts;
-                for (size_t i = 0; i < minLength; ++i) {
-                    filteredSurveysRemaining[i] -= filteredResponseCounts[i];
-                }
             }
 
+            // Make the plot
             if (!filteredSurveyCounts.empty()) {
-                // Get y lim
-                float max_survey_value = *std::max_element(filteredSurveyCounts.begin(), filteredSurveyCounts.end());
+                // Get max survey value (y lim)
+                float max_survey_value = std::max_element(filteredSurveyCounts.begin(), filteredSurveyCounts.end(),
+                    [](const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
+                        return a.second < b.second; // Compare the `second` value (survey count) of each pair
+                    })->second;  // Extract the `second` (survey count) of the max element
 
                 // Set plotLims with max values
                 vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
@@ -971,61 +1011,111 @@ void MyApp::RenderAnalyzeSurveysPage() {
             }
         }
 
-        // If DSP is selected - get design point data and plot responses only
+        // If DSP selected, plot only the single DSP
         if (selectedDSP != 0) {
 
-            if (filteredSurveyCounts.empty()) {
-                // Fill filteredSurveyCounts with data by DSP
-                vector<string> MOEMap = dataMap[std::to_string(selectedCOI)][std::to_string(selectedMOE)];
-                const int MOEMapSize = MOEMap.size();
-                for (const auto& DSP : MOEMap) {
+            string COI = std::to_string(selectedCOI);
+            string MOE = std::to_string(selectedMOE);
+            string DSP = std::to_string(selectedDSP);
 
-                    // Add response counts to the responses counter vector
+            // Fill filteredSurveyCounts with last val of test event name * MOP files in folder
+            if (filteredSurveyCounts.empty()) {
+
+                // Fill filteredSurveyCounts with data by DSP
+                map<string, int> currentMOEMap = programMap[COI][MOE];
+
+                for (const auto& MOEpair : currentMOEMap) {
+
+                    // Add survey counts to the survey counter vector
+                    for (const auto& event : allTestEvents) {
+                        // Split the event string by underscores
+                        vector<string> parts = SplitStringByDelimiter(event, '_');
+
+                        // If event is a part of selected COI and selected MOP and DSP (of loop) add last part of folder name to counter for DSP index
+                        if (parts.size() > 3 && parts[1] == COI && parts[2] == MOE && parts[3] == DSP) {
+                            if (filteredSurveyCounts.find(DSP) == filteredSurveyCounts.end()) {
+                                // Initialize COI in filteredSurveyCounts if it doesn't exist
+                                filteredSurveyCounts[DSP] = 0;
+                            }
+                            // Add the value from dataMap to the filteredSurveyCounts map for the current COI
+                            filteredSurveyCounts[DSP] += programMap[COI][MOE][DSP];  // Add the value to the appropriate index
+                        }
+                    }
+                }
+            }
+
+            // Fill filteredSurveyCounts with num responses in applicable test events
+            if (filteredResponseCounts.empty()) {
+
+                // Add keys from Survey Counts to Response Counts
+                for (const auto& k : filteredSurveyCounts) {
+                    const std::string& key = k.first;
+                    if (filteredResponseCounts.find(key) == filteredResponseCounts.end()) {
+                        // Add the key to filteredResponseCounts with a default value of 0
+                        filteredResponseCounts[key] = 0;
+                    }
+                }
+
+                // Fill filteredSurveyCounts with data by DSP
+                map<string, int> currentMOEMap = responsesMap[COI][MOE];
+
+                for (const auto& MOEpair : currentMOEMap) {
+
+                    // Add survey counts to the survey counter vector
                     for (const auto& event : respondedEvents) {
                         // Split the event string by underscores
                         vector<string> parts = SplitStringByDelimiter(event, '_');
 
-                        // If response is a part of MOE, add number of responses
-                        if (parts.size() > 3 && parts[1] == std::to_string(selectedCOI) && parts[2] == std::to_string(selectedMOE) && parts[3] == DSP) {
-                            // MOE index from second part
-                            int index = (std::stoi(parts[3]) - 1);
-                            string rPath = testProgramPath + "/" + event + "/";
-                            int valueToAdd = CountFilesInFolder(rPath);
-
-                            // Ensure filteredResponseCounts has enough space
-                            if (index >= filteredResponseCounts.size()) {
-                                filteredResponseCounts.resize(index + 1, 0);  // Resize and initialize new elements to 0
+                        // If event is a part of selected COI and selected MOP and DSP (of loop) add last part of folder name to counter for DSP index
+                        if (parts.size() > 3 && parts[1] == COI && parts[2] == MOE && parts[3] == DSP) {
+                            if (filteredResponseCounts.find(DSP) == filteredResponseCounts.end()) {
+                                // Initialize COI in filteredSurveyCounts if it doesn't exist
+                                filteredResponseCounts[DSP] = 0;
                             }
-                            filteredResponseCounts[index] += valueToAdd;  // Add the value to the appropriate index
+                            // Add the value from dataMap to the filteredSurveyCounts map for the current COI
+                            filteredResponseCounts[DSP] += responsesMap[COI][MOE][DSP];  // Add the value to the appropriate index
                         }
                     }
                 }
-
-                // Subtract responses from total to get remaining -> filteredSurveysRemaining
-                size_t minLength = std::min(filteredSurveyCounts.size(), filteredResponseCounts.size());
-                filteredSurveysRemaining = filteredSurveyCounts;
-                for (size_t i = 0; i < minLength; ++i) {
-                    filteredSurveysRemaining[i] -= filteredResponseCounts[i];
-                }
             }
 
+            // Make the plot
             if (!filteredSurveyCounts.empty()) {
-                // NOTHING HERE... CHANGE TO...?
+                // Get max survey value (y lim)
+                float max_survey_value = std::max_element(filteredSurveyCounts.begin(), filteredSurveyCounts.end(),
+                    [](const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
+                        return a.second < b.second; // Compare the `second` value (survey count) of each pair
+                    })->second;  // Extract the `second` (survey count) of the max element
+
+                // Set plotLims with max values
+                vector<float> plotLims = { static_cast<float>(filteredSurveyCounts.size()), max_survey_value };
+
+                RenderProgressBars(filteredSurveyCounts, filteredResponseCounts, "Selected Measure of Effectiveness \n Completion by Design Point",
+                    "Total Surveys to Complete", "Surveys Administered", plotLims);
             }
         }
 
-        /*
-        std::cout << "Full dataset in filteredSurveyCounts: " << endl;
-        for (size_t i = 0; i < filteredSurveyCounts.size(); ++i) {
-            std::cout << "Index " << i << ": " << filteredSurveyCounts[i] << endl;
+        if (!filteredSurveyCounts.empty()) {
+            // Print contents of filteredSurveyCounts for debugging
+            std::cout << "filteredSurveyCounts contents:" << std::endl;
+            for (const auto& entry : filteredSurveyCounts) {
+                std::cout << "Key: " << entry.first << ", Value: " << entry.second << std::endl;
+            }
         }
-        std::cout << "Full dataset in filteredResponseCounts: " << endl;
-        for (size_t i = 0; i < filteredResponseCounts.size(); ++i) {
-            std::cout << "Index " << i << ": " << filteredResponseCounts[i] << endl;
+        
+        if (!filteredResponseCounts.empty()) {
+            // Print contents of filteredSurveyCounts for debugging
+            std::cout << "filteredResponseCounts contents:" << std::endl;
+            for (const auto& entry : filteredResponseCounts) {
+                std::cout << "Key: " << entry.first << ", Value: " << entry.second << std::endl;
+            }
         }
-        */
+        cout << endl;
+
     }
+
     ImGui::EndChild();
+
 
     ImGui::NextColumn();
     // Now all the metadata filters are shown and values saved to metadataFilters
@@ -1418,7 +1508,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
     static bool plotGenerated = false;
 
     if (displayResponses && selectedMOE > 0 && !filterComplete) {
-        plotData = ProcessResponseData(testResponsePath, respondedEvents, responseTypes, selectedCOI, selectedMOE);
+        plotData = ProcessResponseData(testResponsesPath, respondedEvents, responseTypes, selectedCOI, selectedMOE);
         filterComplete = true;
     }
 
@@ -1427,7 +1517,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
         // Generate plots if plotData not empty
         // cout << "Plotting" << endl;
         RenderResponsePlots(plotData);
-        // plotGenerated = true;
+        plotGenerated = true;
     }    
 
     ImGui::NewLine();
