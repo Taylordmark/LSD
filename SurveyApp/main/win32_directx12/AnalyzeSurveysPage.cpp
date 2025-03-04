@@ -86,7 +86,9 @@ vector<string> GetSurveyFolders(const string& directoryPath) {
 }
 
 // Display Test Program Combo Box (Dropdown) after getting local folder names
-int RenderDropdown(const vector<string>& foldersSet, const string& identifier, int currentSelection) {
+int RenderDropdown(const vector<string>& foldersSet, 
+    const string& identifier, 
+    int currentSelection) {
     ImGui::SameLine();
     string dropdownLabel = "## Dropdown for " + identifier;
 
@@ -121,7 +123,9 @@ int CountFilesInFolder(const string& folderPath) {
 }
 
 // Load data from csv file
-bool loadCSV2(const string& filename, vector<vector<string>>& data, vector<string>& comments) {
+bool loadCSV2(const string& filename, 
+    vector<vector<string>>& data, 
+    vector<string>& comments) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Could not open the file: " << filename << std::endl;
@@ -153,7 +157,8 @@ bool loadCSV2(const string& filename, vector<vector<string>>& data, vector<strin
 }
 
 // Helper function to split a string by a delimiter
-vector<string> SplitStringByDelimiter(const string& str, char delimiter) {
+vector<string> SplitStringByDelimiter(const string& str, 
+    char delimiter) {
     vector<string> parts;
     std::stringstream ss(str);
     string part;
@@ -186,8 +191,11 @@ void GetResponseTypes(const string& filename) {
 }
 
 // Function to retrieve the response data for each file
-std::map<std::string, QuestionData> ProcessResponseData(const std::string& testResponsePath, const std::vector<std::string>& respondedEvents,
-    const std::vector<ResponseTypeA>& responseTypes, int selectedCOI, int selectedMOE) {
+std::map<std::string, QuestionData> ProcessResponseData(const std::string& testResponsePath, 
+    const std::vector<std::string>& respondedEvents,
+    const std::vector<ResponseTypeA>& responseTypes, 
+    int selectedCOI, 
+    int selectedMOE) {
 
     int responseCounter = 0;
 
@@ -289,6 +297,7 @@ std::map<std::string, QuestionData> ProcessResponseData(const std::string& testR
         }
     }
 
+    /*
     // Print out the final grouped responses for debugging
     std::cout << "Final grouped responses: " << std::endl;
     for (const auto& entry : questionResponses) {
@@ -306,6 +315,7 @@ std::map<std::string, QuestionData> ProcessResponseData(const std::string& testR
         }
         std::cout << std::endl << endl;
     }
+    */
     // Return the grouped responses (map of questions to responses)
     return questionResponses;
 }
@@ -333,22 +343,7 @@ void RenderProgressBars(const std::map<std::string, int>& surveyPlotData,
     for (const auto& entry : responsesPlotData) {
         responsesKeys.push_back(entry.first);
         responsesValues.push_back(entry.second);
-    }
-
-    /*
-
-    // Print the extracted survey data
-    std::cout << "Survey Data:" << std::endl;
-    for (size_t i = 0; i < surveyKeys.size(); ++i) {
-        std::cout << "  Key: " << surveyKeys[i] << ", Value: " << surveyValues[i] << std::endl;
-    }
-
-    // Print the extracted responses data
-    std::cout << "Responses Data:" << std::endl;
-    for (size_t i = 0; i < responsesKeys.size(); ++i) {
-        std::cout << "  Key: " << responsesKeys[i] << ", Value: " << responsesValues[i] << std::endl;
-    }
-    */
+    }    
 
     // Insert 0 at the beginning of both endResultData and currentProgressData (assuming these are defined elsewhere)
     std::vector<float> modifiedEndResultData = { 0.0f };
@@ -356,20 +351,6 @@ void RenderProgressBars(const std::map<std::string, int>& surveyPlotData,
 
     std::vector<float> modifiedCurrentProgressData = { 0.0f };
     modifiedCurrentProgressData.insert(modifiedCurrentProgressData.end(), responsesValues.begin(), responsesValues.end());
-
-
-    /*
-    // Print the modified data for end result and current progress
-    std::cout << "\nModified End Result Data:" << std::endl;
-    for (const auto& value : modifiedEndResultData) {
-        std::cout << "  " << value << std::endl;
-    }
-
-    std::cout << "\nModified Current Progress Data:" << std::endl;
-    for (const auto& value : modifiedCurrentProgressData) {
-        std::cout << "  " << value << std::endl;
-    }
-    */
 
     // Begin the ImPlot context (for plotting)
     ImPlot::BeginPlot(title);
@@ -388,7 +369,8 @@ void RenderProgressBars(const std::map<std::string, int>& surveyPlotData,
 }
 
 // Response plots code
-void RenderResponsePlots(const std::map<std::string, QuestionData>& plotData) {
+void RenderResponsePlots(const std::map<std::string, 
+    QuestionData>& plotData) {
     static bool popupOpen = false;  // Control whether popup is open
     static int currentPlotIndex = 0; // For navigating between plots
 
@@ -683,6 +665,8 @@ void MyApp::RenderAnalyzeSurveysPage() {
         std::cout << "Clearing stuff" << endl;
     }
 
+    // Dropdowns
+
     // First check COI. If something selected, render next, etc. Otherwise set all filters to 0
     if (selectedTestProgramIndex > 0) {
         lastSelectedProgramIndex = selectedTestProgramIndex;
@@ -714,9 +698,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
         DSPS.push_back("No Selection");
         for (const auto& pair : programMap[std::to_string(selectedCOI)][std::to_string(selectedMOE)]) DSPS.push_back(pair.first);
         ImGui::SetNextItemWidth(200.0f);
-        selectedDSP = RenderDropdown(MOES, "DSPS", selectedDSP);
-        if (selectedMOE != lastMOEIndex) selectedDSP = 0;
-        
+        selectedDSP = RenderDropdown(DSPS, "DSPS", selectedDSP);
     }
     else selectedDSP = 0;
 
@@ -834,7 +816,6 @@ void MyApp::RenderAnalyzeSurveysPage() {
         if (selectedCOI != 0 && selectedMOE == 0) {
 
             string COI = std::to_string(selectedCOI);
-            cout << "Selected COI is " << COI << endl;
 
             // Fill filteredSurveyCounts with last val of test event name * MOP files in folder
             if (filteredSurveyCounts.empty()) {
@@ -1095,6 +1076,9 @@ void MyApp::RenderAnalyzeSurveysPage() {
             }
         }
 
+
+        /*
+        // SHOWS PLOT DATA FOR SANITY CHECK
         if (!filteredSurveyCounts.empty()) {
             // Print contents of filteredSurveyCounts for debugging
             std::cout << "filteredSurveyCounts contents:" << std::endl;
@@ -1111,6 +1095,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
             }
         }
         cout << endl;
+        */
 
     }
 
@@ -1505,7 +1490,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
     static std::map<std::string, QuestionData> plotData;
 
-    static bool plotGenerated = false;
+    // static bool plotGenerated = false;
 
     if (displayResponses && selectedMOE > 0 && !filterComplete) {
         plotData = ProcessResponseData(testResponsesPath, respondedEvents, responseTypes, selectedCOI, selectedMOE);
@@ -1513,12 +1498,12 @@ void MyApp::RenderAnalyzeSurveysPage() {
     }
 
     
-    if (!plotData.empty() && !plotGenerated) {
+    if (!plotData.empty()){ //&& !plotGenerated) {
         // Generate plots if plotData not empty
         // cout << "Plotting" << endl;
         RenderResponsePlots(plotData);
-        plotGenerated = true;
-    }    
+        // plotGenerated = true;
+    }
 
     ImGui::NewLine();
     ImGui::Columns(1);
