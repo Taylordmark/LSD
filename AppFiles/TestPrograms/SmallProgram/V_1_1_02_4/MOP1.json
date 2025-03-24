@@ -17,22 +17,12 @@
                 "3"
             ],
             "response": 0
-        },
-        "Land Time": {
-            "inputType": "text",
-            "preset": "",
-            "response": ""
-        },
+        },       
         "Location": {
             "inputType": "text",
             "preset": "",
             "response": ""
-        },
-        "Takeoff Time": {
-            "inputType": "text",
-            "preset": "",
-            "response": ""
-        },
+        },        
         "Time of Day": {
             "inputType": "dropdown",
             "preset": [

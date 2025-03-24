@@ -385,7 +385,6 @@ void RenderResponsePlots(const std::map<std::string,
     }
 
     // Ensure the popup window is open and plotData is not empty
-    // Ensure the popup window is open and plotData is not empty
     if (ImGui::BeginPopupModal("Response Plot", NULL)) {
         // Convert the plot data into appropriate vectors
         std::vector<std::string> questions;
@@ -484,14 +483,6 @@ void RenderResponsePlots(const std::map<std::string,
 
 
 
-
-
-
-
-
-
-
-
 // Main code
 
 void MyApp::RenderAnalyzeSurveysPage() {
@@ -499,6 +490,9 @@ void MyApp::RenderAnalyzeSurveysPage() {
     // initialize variable to ask for a full page refresh
     static bool pageRefresh = false;
     ImGui::GetStyle().FrameRounding = 5.0f;
+
+    static nlohmann::json metadataFilters;
+    static bool displayResponses = false;
 
     // Ensure ImPlot context is available before proceeding
     ImPlot::CreateContext();
@@ -529,6 +523,8 @@ void MyApp::RenderAnalyzeSurveysPage() {
     // Display "Back to Home" button
     if (ImGui::Button("Back to Home")) {
         currentPage = Page::Home;  // Switch to Home page
+        selectedTestProgramIndex = 0;
+        testPrograms.clear();
     }
 
     ImGui::NewLine();
@@ -1103,15 +1099,21 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
 
     ImGui::NextColumn();
-    // Now all the metadata filters are shown and values saved to metadataFilters
-
-    static nlohmann::json metadataFilters;
-    static bool displayResponses = false;
-
-    string metadataPath = testProgramPath + +"/" + "metadataquestions.json";
+    
+    // Now all the metadata filters are shown and values saved to metadataFilters        
+    string metadataPath = testProgramPath + "/" + "metadataquestions.json";
+    static string lastMetaPath = "";    
 
     nlohmann::json metadataJson;
     std::ifstream metadataFile(metadataPath);
+
+    static vector<pair<string, bool>> surveyResponses; // To store survey responses
+    
+    if (metadataPath != lastMetaPath) {
+        metadataFilters.clear();
+        lastMetaPath = metadataPath;
+        surveyResponses.clear();
+    }
 
     ImGui::Text("Individual Response Filters");    
     ImGui::NewLine();
@@ -1128,7 +1130,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 metadataFilters[item.key()] = item.value();
             }            
         }
-    }
+        }
 
     // Display metadata filters
     for (auto& [metaID, metaValues] : metadataFilters.items()) {  // We now use the global 'metadata'
@@ -1262,15 +1264,163 @@ void MyApp::RenderAnalyzeSurveysPage() {
     ImGui::NewLine();
     ImGui::NewLine();
 
-    static bool displayError = false;
+    static bool displayError = false; // To store the error message state
+    static bool showMatchingResponses = false; // To manage the matching responses window state
+    static bool showSurveyDetailsWindow = false; // To track the survey response details window status
+    static std::string selectedResponseFilename; // To store the currently selected response filename
 
+    // The test program index and COI/MOE should be set before proceeding
     if (selectedTestProgramIndex > 0) {
         if (ImGui::Button("Apply Filters")) {
             // Check if COI and MOE are selected properly
-            if (selectedCOI > 0 && selectedMOE > 0) displayResponses = true;            
-            else displayError = true;
+            if (selectedCOI > 0 && selectedMOE > 0) {
+                displayResponses = true; // Proceed to show responses
+            }
+            else {
+                displayError = true; // Display error if not selected
+            }
+        }
+
+        if (ImGui::Button("Show Matching Responses")) {
+            showMatchingResponses = true; // Set flag to display responses window
         }
     }
+
+    // Show Error Window if necessary
+    if (displayError) {
+        ImGui::Begin("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("COI and MOE must be selected!");
+
+        // Add Close button to the error window
+        if (ImGui::Button("Close")) {
+            displayError = false; // Close the error window
+        }
+
+        ImGui::End();
+    }
+
+    // Display Matching Survey Responses Window
+    if (showMatchingResponses) {
+        ImGui::Begin("Matching Survey Responses", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse);
+
+        for (const auto& response : surveyResponses) {
+            const string& responseFilename = response.first;
+            bool meetsMetadata = response.second;
+
+            // Only display responses that meet the metadata criteria
+            if (meetsMetadata) {
+                if (ImGui::Button(responseFilename.c_str())) {
+                    // Store the selected response filename and show the details window
+                    selectedResponseFilename = responseFilename;
+                    showSurveyDetailsWindow = true;
+                }
+            }
+        }
+        ImGui::NewLine();
+        ImGui::NewLine();
+        // Add Close button to the Matching Responses window
+        if (ImGui::Button("Close")) {
+            showMatchingResponses = false; // Close the responses window
+        }
+        ImGui::NewLine();
+
+        ImGui::End();
+    }
+
+    // Show the Survey Response Details Window if needed
+    if (showSurveyDetailsWindow) {
+        fs::path responsePath = fs::path(responsesPath) / selectedTestProgram / selectedResponseFilename;
+
+        std::ifstream surveyFile(responsePath);
+        if (surveyFile.is_open()) {
+            nlohmann::json surveyData;
+            surveyFile >> surveyData;
+
+            // Set window size to 1/4 of screen width and auto height
+            ImVec2 screenSize = ImGui::GetIO().DisplaySize;  // Get the screen size
+            ImVec2 windowSize(screenSize.x / 4.0f, 0.0f);   // Set width to 1/4 of screen, height will auto-adjust
+            ImGui::SetWindowSize(windowSize);
+
+            // Create a new window to display the JSON data
+            ImGui::Begin("Survey Response Details");
+
+            // Add Close button to reset the window status
+            if (ImGui::Button("Close")) {
+                showSurveyDetailsWindow = false; // Close the survey details window by resetting the flag
+            }
+
+            // Display the comment
+            ImGui::Text("Comment: %s", surveyData["comment"].get<std::string>().c_str());
+
+            // Metadata label
+            ImGui::Text("Metadata:");
+
+            // Display metadata fields
+            for (auto& [key, value] : surveyData["metadata"].items()) {
+                
+                if (value["inputType"] == "dropdown") {
+                    // For dropdown, show the value at the index of "response"
+                    int responseIndex = value["response"].get<int>();
+                    const nlohmann::json& preset = value["preset"];
+                    if (responseIndex >= 0 && responseIndex < preset.size()) {
+                        ImGui::Text("  %s: %s", key.c_str(), preset[responseIndex].get<std::string>().c_str());
+                    } else {
+                        ImGui::Text("  %s: Invalid index", key.c_str());
+                    }
+                }
+                else {
+                    // Handle other input types if needed (e.g., text or number)
+                    if (value.contains("response")) {
+                        if (value["response"].is_string()) {
+                            ImGui::Text("  %s: %s", key.c_str(), value["response"].get<std::string>().c_str());
+                        } else if (value["response"].is_number()) {
+                            ImGui::Text("  %s: %f", key.c_str(), value["response"].get<float>());
+                        }
+                    }
+                }
+            }
+
+            // Display questions and responses
+            ImGui::Text("Questions:");
+            for (size_t i = 0; i < surveyData["questions"].size(); ++i) {
+                // Display the question
+                ImGui::Text("  Question %zu: %s", i + 1, surveyData["questions"][i].get<std::string>().c_str());
+
+                // Display the response
+                if (i < surveyData["responses"].size()) {
+                    ImGui::Text("  Response: %d", surveyData["responses"][i].get<int>());
+                }
+                else {
+                    ImGui::Text("  Response: Not provided");
+                }
+
+                // If there are response types, display them (assuming the size matches)
+                if (i < surveyData["responseTypes"].size()) {
+                    ImGui::Text("  Response Type: %s", surveyData["responseTypes"][i].get<std::string>().c_str());
+                }
+                else {
+                    ImGui::Text("  Response Type: Not provided");
+                }
+            }
+
+            ImGui::End();
+        }
+        else {
+            ImGui::Text("Failed to open survey file: %s", selectedResponseFilename.c_str());
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+    
+
 
     if (displayError) {
         ImGui::NewLine();
@@ -1282,8 +1432,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
         if (ImGui::Button("Nope, sounds like a bad idea")) { displayResponses = false; displayError = false; }
     }
 
-    // string to store response filename, bool to store whether the response meets the metadata requirements
-    static vector<pair<string, bool>> surveyResponses;
+    
 
     // If empty, fill it
     if (surveyResponses.empty()) {
@@ -1304,7 +1453,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
                             string relativePath = subFolder.filename().string() + "/" + fileEntry.path().filename().string();
 
                             // Check metadata or any condition, here I'm using a placeholder boolean check
-                            bool meetsMetadata = true;  // Add your metadata-check logic here
+                            bool meetsMetadata = true;
 
                             // Add the relative folder/filename string to the surveyResponses vector with a bool value (either true or false)
                             surveyResponses.push_back(std::make_pair(relativePath, meetsMetadata));
@@ -1482,6 +1631,11 @@ void MyApp::RenderAnalyzeSurveysPage() {
         std::cout << "Finished processing survey responses.\n";
     }
 
+
+    
+
+    
+
     // Now make a series of plots that can be navigated between using previous and next buttons
     // One plot per MOP, grouped by COI, MOE
 
@@ -1496,7 +1650,6 @@ void MyApp::RenderAnalyzeSurveysPage() {
         plotData = ProcessResponseData(testResponsesPath, respondedEvents, responseTypes, selectedCOI, selectedMOE);
         filterComplete = true;
     }
-
     
     if (!plotData.empty()){ //&& !plotGenerated) {
         // Generate plots if plotData not empty

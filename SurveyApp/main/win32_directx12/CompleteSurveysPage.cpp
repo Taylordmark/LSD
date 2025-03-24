@@ -15,14 +15,21 @@
 #include "CompleteSurveysPage.h"
 #include "json.hpp"
 
+using std::string;
+using std::vector;
+using std::unordered_map;
+using std::ifstream;
+using std::endl;
+using std::map;
+using std::pair;
+using std::cout;
 
 // Static variable definitions
-static const char baseDirectory[] = "C:/LSD/AppFiles/TestPrograms/";
-static const char responseDirectory[] = "C:/LSD/AppFiles/responses/";
-static std::string responseTypesPath = "C:/LSD/AppFiles/responsetypes.json";
+static string baseDirectory = "C:/LSD/AppFiles/TestPrograms/";
+static string responseDirectory = "C:/LSD/AppFiles/responses/";
 
 struct ResponseTypeC {
-    std::string id;
+    string id;
     int count;
     std::vector<std::string> labels;  // List of labels for the response options
 };
@@ -79,6 +86,7 @@ std::vector<std::string> GetFolderNames(const std::string& directoryPath) {
 // Load response types from a JSON file
 void LoadResponseTypes(const std::string& filename) {
     std::ifstream file(filename);
+    cout << filename << endl;
     if (!file.is_open()) {
         std::cerr << "Failed to load file: " << filename << std::endl;
         return;
@@ -502,9 +510,6 @@ int saveSurvey(const std::string& MOP, const nlohmann::json& surveyJson) {
                 std::cerr << "Error: Could not create directories for " << directory << std::endl;
                 return 0;  // Return 0 if directory creation fails
             }
-
-            // Wait for 0.5 seconds after directory creation
-            // std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
 
         // Combine the directory and filename to get the full path
@@ -542,9 +547,12 @@ void MyApp::RenderCompleteSurveysPage() {
 
     static std::string testProgramPath = baseDirectory;
 
-    if (responseTypes.empty()) {
-        LoadResponseTypes(responseTypesPath);
+    if (selectedTestProgramIndex != -1) {
+        static string responseTypesPath = baseDirectory + selectedTestProgram + "/" + "responsetypes.json";
+
+        if (responseTypes.empty()) {LoadResponseTypes(responseTypesPath);}
     }
+    
 
     ImGui::BeginChild("Test Event Display", ImVec2(availableWidth * 0.3f, childHeight), true);
 
@@ -570,7 +578,7 @@ void MyApp::RenderCompleteSurveysPage() {
     // If a MOPS is empty and test event is selected, fill MOPS
     if (MOPS.empty() && !selectedTestEvent.empty()) {
         // Construct the path to the selected test event
-        std::string  testEventPath = baseDirectory + selectedTestProgram + "/" + selectedTestEvent;
+        string  testEventPath = baseDirectory + selectedTestProgram + "/" + selectedTestEvent;
 
         // Load metadata and questions for the selected test event
         if (LoadMetadataAndQuestions(testEventPath)) {
@@ -622,6 +630,15 @@ void MyApp::RenderCompleteSurveysPage() {
             getCurrentDateTime();
 
             bool allSurveysSavedSuccessfully = true; // Flag to track if all surveys are saved successfully
+
+            // Before saving surveys, ensure the directory exists
+            std::string directory = responseDirectory + selectedTestProgram + "/" + selectedTestEvent + "/";
+            // Ensure the directory exists or create it
+            if (!std::filesystem::exists(directory)) {
+                if (!std::filesystem::create_directories(directory)) {
+                    std::cerr << "Error: Could not create directories for " << directory << std::endl;
+                }
+            }
 
             // Iterate through MOPS and save the survey data
             for (const auto& [MOPID, MOPValues] : MOPS.items()) {

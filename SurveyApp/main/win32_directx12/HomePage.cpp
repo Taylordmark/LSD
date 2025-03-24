@@ -11,7 +11,7 @@ namespace MyApp
         ImGui::NewLine();
 
         // Check if the folder exists, and create it if it doesn't
-        std::string folderPath = "C:/AppFilesJSON";
+        std::string folderPath = "C:/LSD/AppFiles";
         if (!std::filesystem::exists(folderPath))
         {
             std::filesystem::create_directory(folderPath);
