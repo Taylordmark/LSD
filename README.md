@@ -39,13 +39,10 @@ Updated version of app is available as an .exe file after running at ""C:\LSD\Su
 
 ## To Do:
 ### Primary
-  - Add metadata filters to **Analyze Surveys** (cockpit position etc)
   - Add sentiment analysis of surveys using hugging face pretrained model to **Analyze Surveys**
   - Add data connection to Envision to get flight data for **Complete Surveys** page
   - Add ability to take in quantitative data in addition to typical survey results
    - This can be doene using a "fill in the blank" option in the responseTypes.json / dropdown options
-  - Fix error where response files are not saved on first attempt
-   - This error current results in first MOP file failing to save properly but all other save, ex. skips MOP1 but saves MOP2, MOP3, etc
 ### Secondary
   - Make app look nicer with better fonts, color themes
   - Add an "Export to CSV" button in the **Analyze Surveys** page that outputs all data in a similar format to the input csv in addition to responses
