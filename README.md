@@ -4,6 +4,7 @@
 
 ## To download and run the application
 Save AppFiles folder to C:/LSD/
+
 Full path should now be C:/LSD/AppFiles/
 
 Save LSD.exe anywhere
