@@ -18,8 +18,12 @@ Clicking on the LSD.exe file should open the app and all functionality should be
 4. Select the csv file which contains test questions
     Format of file must match exactly with four columns
        [Test Event, MOPS, Question, Response Type]
-   Test Event must have the proper format
-   (V for Vary or other single letter)___(COI #)__(MOE #)__(Design Po_nt #)/_(Survey Count / Nomenclature)
+   Test Event must have the proper format with each of the following in the proper order and separated by an underscore "_"
+   - V for Vary or other single letter representing alternative type
+   - COI #
+   - MOE #
+   - Design Point #
+   - Survey Count / Nomenclature
    Response Type may be empty
 5.  Make any required changes to the survey in the GUI
 6.  Enter Test Program Name and the bottom (ex. T7A)
