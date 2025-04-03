@@ -71,6 +71,8 @@ Updated version of app is available as an .exe file after running at ""C:\LSD\Su
 
 ## To Do:
 ### Primary
+  - Fix filtering to properly display survey matches
+  - Add error handling for when MOE not selected but plots displayed
   - Add sentiment analysis of surveys using hugging face pretrained model to **Analyze Surveys**
   - Add data connection to Envision to get flight data for **Complete Surveys** page
   - Add ability to take in quantitative data in addition to typical survey results
