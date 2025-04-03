@@ -1,12 +1,44 @@
 # LSD
 **Local Survey Dialogue**
 
-Save files to C:/LSD/...
 
-**AppFiles** contains Test Programs, Responses, teamplate data for response typed, metadata
+## To download and run the application
+Save AppFiles folder to C:/LSD/
+Full path should now be C:/LSD/AppFiles/
 
-**SurveyApp** contains app code
+Save LSD.exe anywhere
 
+Clicking on the LSD.exe file should open the app and all functionality should be available
+
+## Creating a new Test Program
+1. Open application
+2. Select Create Surveys page
+3. Click on Select Surveys csv file
+4. Select the csv file which contains test questions
+    Format of file must match exactly with four columns
+       [Test Event, MOPS, Question, Response Type]
+   Test Event must have the proper format
+   (V for Vary or other single letter)_(COI #)_(MOE #)_(Design Point #)_(Survey Count / Nomenclature)
+   Response Type may be empty
+5.  Make any required changes to the survey in the GUI
+6.  Enter Test Program Name and the bottom (ex. T7A)
+7.  Click the populate surveys button
+
+## Completing a Survey
+1. Select Test Program
+2. Select test event or use the test event filter no narrow down the list then select test event
+3. Fill in metadata for user ID, flight times, etc
+4. Complete actual survey
+5. Click Submit button
+
+## Analyze Surveys
+Select Test Program
+- Left side shows survey completion
+- Selecting a COI, MOE shows completion of the specific selected COI by MOE or MOE by design point, respectively
+- Right side shows survey filters - currently INOP
+- Open plot window after selecting COI and MOE shows all surveys for said MOE
+- Showing matching responses shows all individual surveys where filter criteria matches (filters currently INOP but matching responses display properly when no filters selected)
+   
 ## To open in editor mode:
 1. Open Visual Studio 2022 (ensure c++ development tools are installed)
 2. Select "Continue without code ->"
