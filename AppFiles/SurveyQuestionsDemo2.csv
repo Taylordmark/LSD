@@ -1,10 +1,10 @@
 Test Event,MOPS,Question,Response Type
-V_1_1_01_4,MOP1,How well did T7 system 1 perform during maneuver A?,acceptability_5Point_NA
-V_1_1_01_4,MOP1,How well did T7 system 2 perform during maneuver A?,acceptability_5Point_NA
-V_1_1_01_4,MOP1,How well did T7 system 3 perform during maneuver A?,acceptability_5Point_NA
-V_1_1_01_4,MOP1,How well did T7 system 4 perform during maneuver A?,acceptability_5Point_NA
-V_1_1_01_4,MOP1,How well did T7 system 5 perform during maneuver A?,acceptability_5Point_NA
-V_2_1_01_4,MOP4,How well did T7 system 4 perform during maneuver A?,acceptability_5Point_NA
-V_2_1_02_4,MOP4,How well did T7 system 5 perform during maneuver B?,acceptability_5Point_NA
-V_2_2_01_4,MOP1,How well did T7 system 1 perform during maneuver A?,acceptability_5Point_NA
-V_2_2_02_4,MOP1,How well did T7 system 2 perform during maneuver B?,acceptability_5Point_NA
+V_1_1_01_4,MOP1,How well did T7 system 1 perform during maneuver A?,Likert 5 Point Acceptability NA
+V_1_1_01_4,MOP1,How well did T7 system 2 perform during maneuver A?,Likert 5 Point Acceptability NA
+V_1_1_01_4,MOP1,How well did T7 system 3 perform during maneuver A?,Likert 5 Point Acceptability NA
+V_1_1_01_4,MOP1,How well did T7 system 4 perform during maneuver A?,Likert 5 Point Acceptability NA
+V_1_1_01_4,MOP1,How well did T7 system 5 perform during maneuver A?,Likert 5 Point Acceptability NA
+V_2_1_01_4,MOP4,How well did T7 system 4 perform during maneuver A?,Likert 5 Point Acceptability NA
+V_2_1_02_4,MOP4,How well did T7 system 5 perform during maneuver B?,Likert 5 Point Acceptability NA
+V_2_2_01_4,MOP1,How well did T7 system 1 perform during maneuver A?,Likert 5 Point Acceptability NA
+V_2_2_02_4,MOP1,How well did T7 system 2 perform during maneuver B?,Likert 5 Point Acceptability NA

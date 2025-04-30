@@ -16,6 +16,12 @@
 #include <regex>
 #include "json.hpp"
 
+
+
+//////////////////////////////////////
+// Imports and Variable Definitions
+//////////////////////////////////////
+
 namespace fs = std::filesystem;
 
 namespace ImPlot {
@@ -40,7 +46,7 @@ static string responsesPath = "C:/LSD/AppFiles/Responses";
 static string testProgramsPath = "C:/LSD/AppFiles/TestPrograms";
 
 // Data to show correct survey
-static int selectedTestProgramIndex = 0;
+static int selectedTestProgramIndex = 0; 
 static int lastSelectedProgramIndex = 0;
 
 static int lastCOIIndex = 0;
@@ -67,7 +73,9 @@ struct QuestionData {
 vector<ResponseTypeA> responseTypes;
 
 
-
+//////////////////////////////////////
+// Functions
+//////////////////////////////////////
 
 // Get all folder names from selected directory
 vector<string> GetSurveyFolders(const string& directoryPath) {
@@ -482,25 +490,27 @@ void RenderResponsePlots(const std::map<std::string,
 
 
 
-
-// Main code
+//////////////////////////////////////
+// MAIN CODE
+//////////////////////////////////////
 
 void MyApp::RenderAnalyzeSurveysPage() {
 
+    //////////////////////////////////////
+    // Variable Definitions
+    //////////////////////////////////////
+
     // initialize variable to ask for a full page refresh
     static bool pageRefresh = false;
+
+    // Make buttons look cute
     ImGui::GetStyle().FrameRounding = 5.0f;
 
+    // Initialize metadata filters
     static nlohmann::json metadataFilters;
-    static bool displayResponses = false;
 
-    // Ensure ImPlot context is available before proceeding
+    // Initialize ImPlot
     ImPlot::CreateContext();
-
-    // Show Title
-    ImGui::Separator();
-    ImGui::Text("Survey Analysis");
-    ImGui::NewLine();
 
     // Test Programs variable for dropdown values, from Test Programs folder
     static vector<string> testPrograms;
@@ -511,11 +521,47 @@ void MyApp::RenderAnalyzeSurveysPage() {
         testPrograms.insert(testPrograms.begin(), "No Selection");
     }
 
+    // List of all COIs, MOEs, DSPs that exist in the selected test program
+    static map<string, map<string, map<string, int>>> programMap;
+    // List of all COIs, MOEs, DSPs that exist in the selected test program responses
+    static map<string, map<string, map<string, int>>> responsesMap;
+    // List of test event folder names that appear in selected test program
+    static vector<string> allTestEvents;
+    // List of test event folder names that have responses in selected test program
+    static vector<string> respondedEvents;
+
+    // Set up aggregate COI variables for plot
+    static map<int, int> testProgramSurveyCounts;
+    static map<int, int> testProgramResponseCounts;
+
+    // Values for counts after filtering
+    static map<string, int> filteredSurveyCounts;
+    static map<string, int> filteredResponseCounts;
+
+    // Bool to track if values are filtered
+    static bool filterComplete = false;
+
+    static bool displayError = false; // To store the error message state
+    static bool showMatchingResponses = false; // To manage the matching responses window state
+    static bool showSurveyDetailsWindow = false; // To track the survey response details window status
+    static std::string selectedResponseFilename; // To store the currently selected response filename
+    static bool openPlotWindow = false; // To display plots of actual responses
+    
+
+    //////////////////////////////////////
+    // Primary GUI code
+    //////////////////////////////////////
+    
+    // Window Title
+    ImGui::Separator();
+    ImGui::Text("Survey Analysis");
+    ImGui::NewLine();
+
     // Render the Test Program combo box for selection
     ImGui::Text("Select Test Program");
-    ImGui::SetNextItemWidth(200.0f);
-
+        
     // Get integer value for selected test program index
+    ImGui::SetNextItemWidth(200.0f);
     selectedTestProgramIndex = RenderDropdown(testPrograms, "Test Program", selectedTestProgramIndex);
     
     ImGui::NewLine();
@@ -535,43 +581,27 @@ void MyApp::RenderAnalyzeSurveysPage() {
     // If a test program is selected, change selectedTestProgram to match (for path retrieval)
     if (selectedTestProgramIndex > 0) { selectedTestProgram = testPrograms[selectedTestProgramIndex]; }
 
-    // List of all COIs, MOEs, DSPs that exist in the selected test program
-    static map<string, map<string, map<string, int>>> programMap;
-    // List of all COIs, MOEs, DSPs that exist in the selected test program responses
-    static map<string, map<string, map<string, int>>> responsesMap;
-    // List of test event folder names that appear in selected test program
-    static vector<string> allTestEvents;
-    // List of test event folder names that have responses in selected test program
-    static vector<string> respondedEvents;
-
-    // Set up aggregate COI variables for plot
-    static map<int, int> testProgramSurveyCounts;
-    static map<int, int> testProgramResponseCounts;
-
-    // Values for counts after filtering
-    static map<string, int> filteredSurveyCounts;
-    static map<string, int> filteredResponseCounts;
-
-    static bool filterComplete = false;
-
     // Set test program paths using Dropdown value
     string testProgramPath = testProgramsPath + "/" + selectedTestProgram;
     string testResponsesPath = responsesPath + "/" + selectedTestProgram;
 
-    // On Refresh, fill the programMap and responsesMap
+    // If test program has been selected
+    // On Refresh, fill the programMap and responsesMap 
     if ((allTestEvents.empty() or pageRefresh or respondedEvents.empty()) && selectedTestProgramIndex > 0) {
 
+        // Set path for response types using test program path
         string responseTypesPath = testProgramPath + "/" + "responsetypes.json";
 
+        // Get response types path
         if (responseTypes.empty()) GetResponseTypes(responseTypesPath);
 
-        // Test event folder names
+        // Get test event folder names
         allTestEvents = GetSurveyFolders(testProgramPath);
 
-        // Get all responded events
+        // Get responded events
         respondedEvents = GetSurveyFolders(testResponsesPath);
 
-        // Reset maps
+        // Reset maps of test program and responses
         programMap.clear();
         responsesMap.clear();
 
@@ -658,11 +688,15 @@ void MyApp::RenderAnalyzeSurveysPage() {
         filterComplete = false;
         pageRefresh = true;
 
+        metadataFilters.clear();
+
         std::cout << "Clearing stuff" << endl;
     }
 
+    ///////////////////////////////
     // Dropdowns
-
+    ///////////////////////////////
+    
     // First check COI. If something selected, render next, etc. Otherwise set all filters to 0
     if (selectedTestProgramIndex > 0) {
         lastSelectedProgramIndex = selectedTestProgramIndex;
@@ -672,7 +706,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
         for (const auto& pair : programMap) COIS.push_back(pair.first);
         ImGui::SetNextItemWidth(200.0f);
         selectedCOI = RenderDropdown(COIS, "COIS", selectedCOI);
-        if (selectedCOI != lastCOIIndex) selectedMOE = 0; selectedDSP = 0;
+        if (selectedCOI != lastCOIIndex) { selectedMOE = 0; selectedDSP = 0; }
 
     }
     else selectedCOI = 0;
@@ -709,13 +743,15 @@ void MyApp::RenderAnalyzeSurveysPage() {
         cout << "Clearing" << endl;
     }
 
-
     ImGui::NewLine();
     ImGui::NewLine();
     ImGui::NewLine();
 
+    ///////////////////////////////
+    // Plots
+    ///////////////////////////////
+    
     ImGui::BeginChild("Surveys Summary Statistics");
-
     // If test events is filled and Test Program is selected, run summary plot logic
     if (!allTestEvents.empty() && selectedTestProgramIndex != 0) {
         // If Program selected, plot data by COI
@@ -1094,31 +1130,35 @@ void MyApp::RenderAnalyzeSurveysPage() {
         */
 
     }
-
     ImGui::EndChild();
 
-
     ImGui::NextColumn();
+
+    ///////////////////////////////
+    // Metadata Filters GUI
+    ///////////////////////////////
     
-    // Now all the metadata filters are shown and values saved to metadataFilters        
+    // Set path based on selected program
     string metadataPath = testProgramPath + "/" + "metadataquestions.json";
-    static string lastMetaPath = "";    
+    static string lastMetaPath = "";
 
     nlohmann::json metadataJson;
     std::ifstream metadataFile(metadataPath);
 
     static vector<pair<string, bool>> surveyResponses; // To store survey responses
     
+    // If path changed, reset everything
     if (metadataPath != lastMetaPath) {
         metadataFilters.clear();
         lastMetaPath = metadataPath;
         surveyResponses.clear();
+        cout << "Path changed, clearing" << endl;
     }
 
-    ImGui::Text("Individual Response Filters");    
+    ImGui::Text("Individual Response Filters");
     ImGui::NewLine();
     
-    // Add metadata questions loading
+    // Metadata questions loading
     if (metadataFile.is_open() && metadataFilters.empty()) {
         metadataFile >> metadataJson;
 
@@ -1130,9 +1170,9 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 metadataFilters[item.key()] = item.value();
             }            
         }
-        }
+    }
 
-    // Display metadata filters
+    // Display metadata filter input fields
     for (auto& [metaID, metaValues] : metadataFilters.items()) {  // We now use the global 'metadata'
 
         // Display the key above input
@@ -1259,34 +1299,26 @@ void MyApp::RenderAnalyzeSurveysPage() {
                 metaValues["response"] = minValue + "," + maxValue;  // Store the result in the response field
             }
         }
-    }    
-
+    }
+    
     ImGui::NewLine();
     ImGui::NewLine();
 
-    static bool displayError = false; // To store the error message state
-    static bool showMatchingResponses = false; // To manage the matching responses window state
-    static bool showSurveyDetailsWindow = false; // To track the survey response details window status
-    static std::string selectedResponseFilename; // To store the currently selected response filename
-
-    // The test program index and COI/MOE should be set before proceeding
+    // Buttons to apply filters, show responses, or show plots
     if (selectedTestProgramIndex > 0) {
         if (ImGui::Button("Apply Filters")) {
-            // Check if COI and MOE are selected properly
-            if (selectedCOI > 0 && selectedMOE > 0) {
-                displayResponses = true; // Proceed to show responses
-            }
-            else {
-                displayError = true; // Display error if not selected
-            }
+            filterComplete = false;
         }
-
         if (ImGui::Button("Show Matching Responses")) {
             showMatchingResponses = true; // Set flag to display responses window
         }
+        if (ImGui::Button("Show Plots")) {
+            static bool openPlotWindow = true;
+        }
+
     }
 
-    // Show Error Window if necessary
+    // Window to tell people not to plot without selecting COI & MOE
     if (displayError) {
         ImGui::Begin("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("COI and MOE must be selected!");
@@ -1297,9 +1329,239 @@ void MyApp::RenderAnalyzeSurveysPage() {
         }
 
         ImGui::End();
+        ImGui::End();
     }
 
-    // Display Matching Survey Responses Window
+    
+
+
+    
+    //////////////////////////////////////
+    // Applying Filters
+    //////////////////////////////////////
+
+    // Filter data if not complete since last change
+    if (!filterComplete && selectedTestProgramIndex > 0) {
+
+        surveyResponses.clear();
+
+        // Iterate through all of the folders in responsesPath / selectedTestProgram
+        fs::path programFolder = fs::path(responsesPath) / selectedTestProgram;
+
+        // Make sure the directory exists
+        if (fs::exists(programFolder) && fs::is_directory(programFolder)) {
+            // Iterate through all subdirectories (e.g., V_2_2_02_4)
+            for (const auto& dirEntry : fs::directory_iterator(programFolder)) {
+                if (fs::is_directory(dirEntry)) {
+                    fs::path subFolder = dirEntry.path();
+
+                    // Iterate through all of the files in the subfolder (e.g., .json files)
+                    for (const auto& fileEntry : fs::directory_iterator(subFolder)) {
+                        if (fs::is_regular_file(fileEntry) && fileEntry.path().extension() == ".json") {
+                            // Get the relative folder/filename string
+                            string relativePath = subFolder.filename().string() + "/" + fileEntry.path().filename().string();
+
+                            // Check metadata or any condition, here I'm using a placeholder boolean check
+                            bool meetsMetadata = true;
+
+                            // Add the relative folder/filename string to the surveyResponses vector with a bool value (either true or false)
+                            surveyResponses.push_back(std::make_pair(relativePath, meetsMetadata));
+
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            std::cerr << "Directory does not exist: " << programFolder << endl;
+        }
+
+        // First filtering by COI, MOE, DSP, then by metadata. Not done simultaneously because it's faster (I think?)
+        for (size_t i = 0; i < surveyResponses.size(); ++i) {
+
+            // Extract the filename from the pair
+            std::string filename = surveyResponses[i].first;
+
+            // If something has been selected from the dropdowns, filter the data by COI, MOE, MOP
+            if (selectedCOI > 0) {
+
+                // Find the first underscore
+                size_t pos = filename.find('_');
+                if (pos != std::string::npos) {
+
+                    // Extract the part before the first underscore (e.g., "V" for vary)
+                    std::string prefix = filename.substr(0, pos);
+
+                    // Extract the part between the first and third underscores for the version-like segment
+                    size_t secondPos = filename.find('_', pos + 1);
+                    size_t thirdPos = filename.find('_', secondPos + 1);
+                    size_t fourthPos = filename.find('_', thirdPos + 1);  // Check for the fourth underscore
+
+                    if (secondPos != std::string::npos && thirdPos != std::string::npos && fourthPos != std::string::npos) {
+                        // Extract the full version segment (e.g., '1_1_02_4')
+                        std::string versionSegment = filename.substr(pos + 1, fourthPos - pos - 1);
+
+                        // Split the version segment by underscores
+                        std::vector<std::string> parts = SplitStringByDelimiter(versionSegment, '_');
+
+                        // Convert to ints
+                        try {
+                            int part1 = std::stoi(parts[0]);
+                            int part2 = std::stoi(parts[1]);
+                            int part3 = std::stoi(parts[2]);
+
+                            // Set entry.second to false if conditions are not met
+                            if (selectedCOI > 0 && part1 != selectedCOI) {
+                                surveyResponses[i].second = false;
+                            }
+                            if (selectedMOE > 0 && part2 != selectedMOE) {
+                                surveyResponses[i].second = false;
+                            }
+                            if (selectedDSP > 0 && part3 != selectedDSP) {
+                                surveyResponses[i].second = false;
+                            }
+                        }
+                        catch (const std::invalid_argument& e) {
+                            // Handle invalid integer conversion (if the version segment is not valid)
+                            surveyResponses[i].second = false; // Set to false on error
+                        }
+                        catch (const std::out_of_range& e) {
+                            // Handle out of range exceptions for integer conversion
+                            surveyResponses[i].second = false; // Set to false on error
+                        }
+                    }
+                    else {
+                        std::cerr << "Second, third, or fourth underscore not found in filename: " << filename << "\n";
+                    }
+                }
+                else {
+                    std::cerr << "First underscore not found in filename: " << filename << "\n";
+                }
+            }
+
+            // Get a list of active metadata filters
+            std::vector<std::string> activeFilterIDs;
+
+            for (auto& [metaID, metaValues] : metadataFilters.items()) {
+                // If dropdown, check if response > 0
+                if (metaValues["inputType"] == "dropdown") {
+                    if (metaValues["response"] > 0) {
+                        activeFilterIDs.push_back(metaID);
+                    }
+                }
+
+                // If text, check if len > 0
+                if (metaValues["inputType"] == "text") {
+                    if (metaValues["response"].get<std::string>().length() > 0) {
+                        activeFilterIDs.push_back(metaID);
+                    }
+                }
+
+                // If time, check if len > 1 (ignore comma)
+                if (metaValues["inputType"] == "time") {
+                    std::string timeResponse = metaValues["response"].get<std::string>();
+                    if (timeResponse.length() > 1) {
+                        activeFilterIDs.push_back(metaID);
+                    }
+                }
+            }
+
+            // If any filters are active, check that the surveyResponses match
+            if (!activeFilterIDs.empty()) {
+                fs::path programFolder = fs::path(responsesPath) / selectedTestProgram;
+
+                for (size_t i = 0; i < surveyResponses.size(); ++i) {
+                    // If COI, MOE, and DSP filter conditions were met, check metadata
+                    if (surveyResponses[i].second == true) {
+                        // Construct the full file path for the current survey response
+                        fs::path filePath = programFolder / surveyResponses[i].first;
+
+                        // Open the file using std::ifstream
+                        std::ifstream file(filePath);
+
+                        if (file.is_open()) {
+                            // Parse the JSON data from the file
+                            nlohmann::json currentMeta;
+                            file >> currentMeta;
+
+                            // Iterate through the activeFilterIDs to check that currentMeta values match metadataFilters values
+                            for (auto& id : activeFilterIDs) {
+
+                                // If dropdown, check for exact match of response
+                                if (metadataFilters[id]["inputType"] == "dropdown") {
+                                    auto responseMetaValue = currentMeta[id]["response"];
+                                    auto filterMetaValue = metadataFilters[id]["response"];
+                                    cout << responseMetaValue << endl << filterMetaValue << endl;
+
+                                    if (responseMetaValue != filterMetaValue) {
+                                        surveyResponses[i].second = false;  // Set to false if no match
+                                    }
+                                }
+
+                                // If text, check that metadataFilters string appears in currentMeta
+                                if (metadataFilters[id]["inputType"] == "text") {
+                                    std::string filterValue = metadataFilters[id]["response"];  // Assuming the response is a string
+                                    std::string currentValue = currentMeta[id]["response"]; // Assuming the response is a string
+
+                                    if (currentValue.find(filterValue) == std::string::npos) {
+                                        surveyResponses[i].second = false;  // Set to false if string doesn't match
+                                    }
+                                }
+
+                                // If time, separate the two values using the comma and check if currentMeta value is between the two
+                                if (metadataFilters[id]["inputType"] == "time") {
+                                    std::string timeRange = metadataFilters[id]["response"];  // Assuming the response is a string like "08:00,18:00"
+                                    size_t commaPos = timeRange.find(',');
+
+                                    if (commaPos != std::string::npos) {
+                                        std::string startTime = timeRange.substr(0, commaPos);
+                                        std::string endTime = timeRange.substr(commaPos + 1);
+
+                                        // Assuming currentMeta[id]["response"] is a time string (e.g., "10:00")
+                                        std::string currentTime = currentMeta[id]["response"];
+
+                                        if (currentTime < startTime || currentTime > endTime) {
+                                            surveyResponses[i].second = false;  // Set to false if current time is outside the range
+                                        }
+                                    }
+                                }
+                            }
+
+
+                            // Process metadata or any other logic here
+                        }
+                        else {
+                            std::cerr << "Failed to open file: " << filePath << std::endl;
+                        }
+                    }
+                }                
+            }
+        }
+        filterComplete = true;
+        std::cout << "Finished processing survey responses.\n";
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Display Matching Responses Window
     if (showMatchingResponses) {
         ImGui::Begin("Matching Survey Responses", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse);
 
@@ -1357,7 +1619,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
             // Display metadata fields
             for (auto& [key, value] : surveyData["metadata"].items()) {
-                
+
                 if (value["inputType"] == "dropdown") {
                     // For dropdown, show the value at the index of "response"
                     int responseIndex = value["response"].get<int>();
@@ -1412,6 +1674,15 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
 
 
+    
+    
+    
+    
+    
+    
+
+
+
 
 
 
@@ -1422,215 +1693,12 @@ void MyApp::RenderAnalyzeSurveysPage() {
     
 
 
-    if (displayError) {
-        ImGui::NewLine();
-        ImGui::Text("Looks like you haven't set all of the COI/MOE filters. \nAre you sure you want to create a bunch of plots?");
+    
 
-        // Buttons for handling user decision
-        if (ImGui::Button("Yes, I'm sure")) { displayResponses = true; displayError = false; }
-        ImGui::SameLine();
-        if (ImGui::Button("Nope, sounds like a bad idea")) { displayResponses = false; displayError = false; }
-    }
 
     
 
-    // If empty, fill it
-    if (surveyResponses.empty()) {
-        // Iterate through all of the folders in responsesPath / selectedTestProgram
-        fs::path programFolder = fs::path(responsesPath) / selectedTestProgram;
-
-        // Make sure the directory exists
-        if (fs::exists(programFolder) && fs::is_directory(programFolder)) {
-            // Iterate through all subdirectories (e.g., V_2_2_02_4)
-            for (const auto& dirEntry : fs::directory_iterator(programFolder)) {
-                if (fs::is_directory(dirEntry)) {
-                    fs::path subFolder = dirEntry.path();
-
-                    // Iterate through all of the files in the subfolder (e.g., .json files)
-                    for (const auto& fileEntry : fs::directory_iterator(subFolder)) {
-                        if (fs::is_regular_file(fileEntry) && fileEntry.path().extension() == ".json") {
-                            // Get the relative folder/filename string
-                            string relativePath = subFolder.filename().string() + "/" + fileEntry.path().filename().string();
-
-                            // Check metadata or any condition, here I'm using a placeholder boolean check
-                            bool meetsMetadata = true;
-
-                            // Add the relative folder/filename string to the surveyResponses vector with a bool value (either true or false)
-                            surveyResponses.push_back(std::make_pair(relativePath, meetsMetadata));
-
-                        }
-                    }
-                }
-            }
-        }
-        else {
-            std::cerr << "Directory does not exist: " << programFolder << endl;
-        }
-    }
-
-    // If displayResponses, first filter responses filtered by COI, MOE, then all metadata filters, group by Design Point
-    if (displayResponses && !filterComplete) {
-        // First filtering by COI, MOE, DSP, then by metadata. Not done simultaneously because it's faster (I think?)
-
-        // Filter by COI, MOE, DSP, if applicable
-        for (size_t i = 0; i < surveyResponses.size(); ++i) {
-
-            // Extract the filename from the pair
-            std::string filename = surveyResponses[i].first;
-
-            // Find the first underscore
-            size_t pos = filename.find('_');
-            if (pos != std::string::npos) {
-
-                // Extract the part before the first underscore (e.g., "V" for vary)
-                std::string prefix = filename.substr(0, pos);
-
-                // Extract the part between the first and third underscores for the version-like segment
-                size_t secondPos = filename.find('_', pos + 1);
-                size_t thirdPos = filename.find('_', secondPos + 1);
-                size_t fourthPos = filename.find('_', thirdPos + 1);  // Check for the fourth underscore
-
-                if (secondPos != std::string::npos && thirdPos != std::string::npos && fourthPos != std::string::npos) {
-                    // Extract the full version segment (e.g., '1_1_02_4')
-                    std::string versionSegment = filename.substr(pos + 1, fourthPos - pos - 1);
-
-                    // Split the version segment by underscores
-                    std::vector<std::string> parts = SplitStringByDelimiter(versionSegment, '_');
-
-                    // Convert to ints
-                    try {
-                        int part1 = std::stoi(parts[0]);
-                        int part2 = std::stoi(parts[1]);
-                        int part3 = std::stoi(parts[2]);
-
-                        // Set entry.second to false if conditions are not met
-                        if (selectedCOI > 0 && part1 != selectedCOI) {
-                            surveyResponses[i].second = false;
-                        }
-                        if (selectedMOE > 0 && part2 != selectedMOE) {
-                            surveyResponses[i].second = false;
-                        }
-                        if (selectedDSP > 0 && part3 != selectedDSP) {
-                            surveyResponses[i].second = false;
-                        }
-                    }
-                    catch (const std::invalid_argument& e) {
-                        // Handle invalid integer conversion (if the version segment is not valid)
-                        surveyResponses[i].second = false; // Set to false on error
-                    }
-                    catch (const std::out_of_range& e) {
-                        // Handle out of range exceptions for integer conversion
-                        surveyResponses[i].second = false; // Set to false on error
-                    }
-                }
-                else {
-                    std::cerr << "Second, third, or fourth underscore not found in filename: " << filename << "\n";
-                }
-            }
-            else {
-                std::cerr << "First underscore not found in filename: " << filename << "\n";
-            }
-        }
-
-        // for (const auto& entry : surveyResponses)
-        //     std::cout << entry.first << ": " << entry.second << std::endl;
-
-        std::vector<std::string> activeFilterIDs;
-
-        // Get a list of active metadata filters
-        for (auto& [metaID, metaValues] : metadataFilters.items()) {
-            // If dropdown, check if response > 0
-            if (metaValues["inputType"] == "dropdown") {
-                if (metaValues["response"] > 0) {
-                    activeFilterIDs.push_back(metaID);
-                }
-            }
-
-            // If text, check if len > 0
-            if (metaValues["inputType"] == "text") {
-                if (metaValues["response"].get<std::string>().length() > 0) {
-                    activeFilterIDs.push_back(metaID);
-                }
-            }
-
-            // If time, check if len > 1 (ignore comma)
-            if (metaValues["inputType"] == "time") {
-                std::string timeResponse = metaValues["response"].get<std::string>();
-                if (timeResponse.length() > 1) {
-                    activeFilterIDs.push_back(metaID);
-                }
-            }
-        }
-
-        // If any filters are active, check that the surveyResponses match
-        if (!activeFilterIDs.empty()) {
-            fs::path programFolder = fs::path(responsesPath) / selectedTestProgram;
-
-            for (size_t i = 0; i < surveyResponses.size(); ++i) {
-                // If COI, MOE, and DSP filter conditions were met, check metadata
-                if (surveyResponses[i].second == true) {
-                    // Construct the full file path for the current survey response
-                    fs::path filePath = programFolder / surveyResponses[i].first;
-
-                    // Open the file using std::ifstream
-                    std::ifstream file(filePath);
-
-                    if (file.is_open()) {
-                        // Parse the JSON data from the file
-                        nlohmann::json currentMeta;
-                        file >> currentMeta;
-
-                        // Iterate through the activeFilterIDs to check that currentMeta values match metadataFilters values
-                        for (auto& id : activeFilterIDs) {
-
-                            // If dropdown, check for exact match of response
-                            if (metadataFilters[id]["inputType"] == "dropdown") {
-                                if (currentMeta[id]["response"] != metadataFilters[id]["response"]) {
-                                    surveyResponses[i].second = false;  // Set to false if no match
-                                }
-                            }
-
-                            // If text, check that metadataFilters string appears in currentMeta
-                            if (metadataFilters[id]["inputType"] == "text") {
-                                std::string filterValue = metadataFilters[id]["response"];  // Assuming the response is a string
-                                std::string currentValue = currentMeta[id]["response"]; // Assuming the response is a string
-
-                                if (currentValue.find(filterValue) == std::string::npos) {
-                                    surveyResponses[i].second = false;  // Set to false if string doesn't match
-                                }
-                            }
-
-                            // If time, separate the two values using the comma and check if currentMeta value is between the two
-                            if (metadataFilters[id]["inputType"] == "time") {
-                                std::string timeRange = metadataFilters[id]["response"];  // Assuming the response is a string like "08:00,18:00"
-                                size_t commaPos = timeRange.find(',');
-
-                                if (commaPos != std::string::npos) {
-                                    std::string startTime = timeRange.substr(0, commaPos);
-                                    std::string endTime = timeRange.substr(commaPos + 1);
-
-                                    // Assuming currentMeta[id]["response"] is a time string (e.g., "10:00")
-                                    std::string currentTime = currentMeta[id]["response"];
-
-                                    if (currentTime < startTime || currentTime > endTime) {
-                                        surveyResponses[i].second = false;  // Set to false if current time is outside the range
-                                    }
-                                }
-                            }
-                        }
-
-
-                        // Process metadata or any other logic here
-                    }
-                    else {
-                        std::cerr << "Failed to open file: " << filePath << std::endl;
-                    }
-                }
-            }
-        }
-        std::cout << "Finished processing survey responses.\n";
-    }
-
+    
 
     
 
@@ -1646,7 +1714,7 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
     // static bool plotGenerated = false;
 
-    if (displayResponses && selectedMOE > 0 && !filterComplete) {
+    if (selectedMOE > 0 && !filterComplete) {
         plotData = ProcessResponseData(testResponsesPath, respondedEvents, responseTypes, selectedCOI, selectedMOE);
         filterComplete = true;
     }
@@ -1663,7 +1731,6 @@ void MyApp::RenderAnalyzeSurveysPage() {
 
     ImPlot::DestroyContext();        
 }
-
 
 
 

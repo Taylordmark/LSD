@@ -17,6 +17,12 @@
 #include <dxgi1_4.h>
 #include <tchar.h>
 
+// Dialogue Box Deletion Here
+#ifndef _DEBUG
+#pragma comment(linker, "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+#endif
+
+
 
 #ifdef _DEBUG
 #define DX12_ENABLE_DEBUG_LAYER

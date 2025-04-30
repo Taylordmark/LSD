@@ -170,7 +170,7 @@ void RenderTestProgramCombo(const std::vector<std::string>& testPrograms) {
 void RenderTestEventsTable(const std::vector<std::string>& testEventFolders, char eventFilter[10]) {
     if (ImGui::BeginTable("TestEventTable", 2, ImGuiTableFlags_ScrollY | ImGuiTableFlags_Borders)) {
         ImGui::TableSetupColumn("Test Event", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("Actions", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableHeadersRow();
 
         for (size_t i = 0; i < testEventFolders.size(); ++i) {
@@ -254,19 +254,15 @@ bool LoadMetadataAndQuestions(std::string testEventPath) {
                             }
                         }
                     }
-
                     if (jsonData.contains("questions")) {
                         MOPS[MOPSID]["questions"] = jsonData["questions"];
                     }
-
                     if (jsonData.contains("responseTypes")) {
-                        MOPS[MOPSID]["responseTypes"] = jsonData["responseTypes"];
+                        MOPS[MOPSID]["responseTypes"] = jsonData["responseTypes"];                        
                     }
-
                     if (jsonData.contains("responses")) {
                         MOPS[MOPSID]["responses"] = jsonData["responses"];
                     }
-
                     success = true;
                     refreshData = false;
                 }

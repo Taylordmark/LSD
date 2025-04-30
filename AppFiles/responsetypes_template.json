@@ -1,0 +1,87 @@
+{
+	"responseTypes": [
+		{
+			"id": "Likert 7 Point Agreement",
+			"count": 7,
+			"labels": [ "Strongly Disagree", "Disagree", "Somewhat Disagree", "Neither Agree Nor Disagree", "Somewhat Agree", "Agree", "Strongly Agree" ]
+		},
+		{
+			"id": "Likert 3 Point Low Med High",
+			"count": 3,
+			"labels": [ "Low", "Medium", "High" ]
+		},
+		{
+			"id": "Likert 5 Point Acceptability NA",
+			"count": 6,
+			"labels": [ "NA", "Completely Unnacceptable", "Largely Unacceptable", "Somewhat Unacceptable", "Somewhat Acceptable", "Largely Acceptable", "Completely Acceptable" ]
+		},
+		{
+			"id": "Likert 5 Point Agreement",
+			"count": 5,
+			"labels": [ "Disagree", "Somewhat Disagree", "Neither Agree Nor Disagree", "Somewhat Agree", "Agree" ]
+		},
+		{
+			"id": "Likert 5 Point Agreement NA",
+			"count": 6,
+			"labels": [ "NA", "Disagree", "Somewhat Disagree", "Neither Agree Nor Disagree", "Somewhat Agree", "Agree" ]
+		},
+		{
+			"id": "Likert 3 Point Satisfactory",
+			"count": 3,
+			"labels": [ "Unsatisfactory", "Neutral", "Satisfactory" ]
+		},
+		{
+			"id": "Likert 6 Point Satisfactory",
+			"count": 3,
+			"labels": [ "Very Unsatisfactory", "Unsatisfactory", "Marginally Unsatisfactory", "Marginally Satisfactory", "Satisfactory", "Very Satisfactory" ]
+		},
+		{
+			"id": "Bedford Workload 10 Point Simple",
+			"count": 10,
+			"labels": [ "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" ]
+		},
+		{
+			"id": "Situational Awareness 5 Point",
+			"count": 10,
+			"labels": [ "Very Good", "Good", "Adequate", "Poor", "Very Poor"]
+		},
+		{
+			"id": "Likert 5 Point Low to High",
+			"count": 5,
+			"labels": [ "Very Low", "Neutral", "Very High" ]
+		},
+		{
+			"id": "Floating Point Average Above",
+			"count": -1,
+			"labels": [ "Enter value" ],
+			"threshold_type": "maximum",
+			"threshold": 0,
+			"notes": "Use where goal is low values, checks if average exceeds your threshold"
+		},
+		{
+			"id": "Floating Point Average Below",
+			"count": -1,
+			"labels": [ "Enter value" ],
+			"threshold_type": "minimum",
+			"threshold": 0,
+			"notes": "Use where goal is high values, checks if average is falls short of your threshold"
+		},
+		{
+			"id": "Floating Point Max",
+			"count": -1,
+			"labels": [ "Enter value" ],
+			"threshold_type": "maximum",
+			"threshold": 0,
+			"notes": "Use where goal is low values, checks if each value exceeds your threshold"
+		},
+		{
+			"id": "Floating Point Min",
+			"count": -1,
+			"labels": [ "Enter value" ],
+			"threshold_type": "minimum",
+			"threshold": 0,
+			"notes": "Use where goal is high values, checks if values are lower than your threshold"
+		}
+	]	
+}
+

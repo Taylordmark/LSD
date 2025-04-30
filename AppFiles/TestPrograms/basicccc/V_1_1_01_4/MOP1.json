@@ -1,0 +1,27 @@
+{
+    "metadata": {
+        "Dropdown": {
+            "inputType": "dropdown",
+            "preset": [
+                "option1",
+                "option2",
+                "option3"
+            ],
+            "response": 0
+        },
+        "UserID": {
+            "inputType": "text",
+            "preset": "",
+            "response": ""
+        }
+    },
+    "questions": [
+        "How well did T7 system 1 perform during maneuver A?"
+    ],
+    "responseTypes": [
+        "Likert 5 Point Acceptability NA"
+    ],
+    "responses": [
+        null
+    ]
+}

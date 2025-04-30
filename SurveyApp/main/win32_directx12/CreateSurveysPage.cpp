@@ -97,9 +97,7 @@ std::vector<std::vector<std::string>> surveyData;
 static std::string baseDirectory = "C:/LSD/AppFiles/";
 static std::string surveysDirectory = baseDirectory + "TestPrograms/";
 static std::string responsesDirectory = baseDirectory + "Responses/";
-// static std::string CSVPath = baseDirectory + "SurveyQuestionsDemo.csv";
-static std::string responseTypesPath = baseDirectory + "responsetypes.json";
-
+static std::string responseTypesPath = baseDirectory + "responsetypes_template.json";
 
 static std::string CSVPath = "";
 
@@ -151,62 +149,40 @@ void SaveSurveyToJSON(
     const std::string& mops,
     const std::vector<std::string>& questions,
     const std::vector<std::string>& rTs,
-    const std::string& directoryPath) {
-
+    const std::string& directoryPath,
+    const nlohmann::json& editableMetadata,
+    const std::string& testEventName
+) {
     // Construct file path: directoryPath + MOPS + ".json"
     std::string fullFilePath = directoryPath + mops + ".json";
 
     // Prepare JSON object
     nlohmann::json jsonData;
 
-    // Add questions
+    // Add questions and response types
     jsonData["questions"] = questions;
-
-    // Add response types
     jsonData["responseTypes"] = rTs;
 
-    // Add responses (NULL for each question)
+    // Initialize responses to null
     nlohmann::json responses = nlohmann::json::array();
     for (size_t i = 0; i < questions.size(); ++i) {
-        responses.push_back(nullptr); // Each response is NULL
+        responses.push_back(nullptr);
     }
+
     jsonData["responses"] = responses;
-
-    // Metadata questions
-    std::string metadataPath = baseDirectory + "metadataquestions.json";
-
-    // Add metadata questions loading
-    nlohmann::json metadataJson;
-    std::ifstream metadataFile(metadataPath);
-    if (metadataFile.is_open()) {
-        metadataFile >> metadataJson;
-
-        // Check if the "metadata" field exists in the JSON
-        if (metadataJson.contains("aircrew")) {
-            // Create a JSON object for metadata
-            nlohmann::json metadataObj;
-
-            // Iterate over the keys of the "metadata" object and store them in the metadata object
-            for (const auto& item : metadataJson["aircrew"].items()) {
-                metadataObj[item.key()] = item.value();
-            }
-
-            // Add the metadata object to the jsonData
-            jsonData["metadata"] = metadataObj;
-        }
-    }
-
-    // Open the JSON file for writing
+    jsonData["metadata"] = editableMetadata["aircrew"];
+    
+    // Save the file
     std::ofstream jsonFile(fullFilePath);
     if (!jsonFile.is_open()) {
         ImGui::OpenPopup("File Save Error");
         return;
     }
 
-    // Write the JSON data with pretty printing (indent 4 spaces)
-    jsonFile << jsonData.dump(4);
+    jsonFile << jsonData.dump(4); // Pretty print with indent
     jsonFile.close();
 }
+
 
 
 // Function to load response types from a JSON file
@@ -285,7 +261,7 @@ void RenderSurveyData(std::unordered_map<std::string, std::unordered_map<std::st
                 needsSave = true;
             }
             ImGui::SameLine();
-            if (ImGui::Button(("Remove Last Question from " + testEvent + " " + mops).c_str())) {
+            if (ImGui::Button(("Remove Question from " + testEvent + " " + mops).c_str())) {
                 if (!questions.empty()) {
                     questions.pop_back();
                     needsSave = true;
@@ -302,18 +278,214 @@ void RenderSurveyData(std::unordered_map<std::string, std::unordered_map<std::st
 // Function to render the response types
 void RenderResponseTypes() {
     ImGui::Text("Available Response Types:");
+    ImGui::NewLine();
     for (const auto& responseType : responseTypes) {
         // Correcting to access 'id' as the response type
-        ImGui::Text("Type: %s", responseType.id.c_str());  // Use 'id' instead of 'type'
+        ImGui::Text("%s", responseType.id.c_str());
 
         // Render the labels associated with the response type
         for (const auto& label : responseType.labels) {  // Use 'labels' instead of 'responseLabels'
             ImGui::Text("  - %s", label.c_str());
         }
-
+        ImGui::NewLine();
         ImGui::Separator();
+        ImGui::NewLine();
     }
 }
+
+// Function to edit Metadata
+void RenderMetadataPopup(bool& openPopup, nlohmann::json& editableMetadata, const std::string& filePath) {
+    static bool addNewFieldRequested = false;  // NEW: flag for adding field immediately
+
+    if (openPopup)
+        ImGui::OpenPopup("Edit Metadata");
+
+    if (ImGui::BeginPopupModal("Edit Metadata", nullptr, ImGuiWindowFlags_None)) {
+        ImVec2 windowSize(600, 400);
+        ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+        ImVec2 minSize(400, 300);
+        ImVec2 maxSize(800, 600);
+        ImGui::SetNextWindowSizeConstraints(minSize, maxSize);
+
+        std::vector<std::string> sectionNames;
+        for (auto& category : editableMetadata.items()) {
+            sectionNames.push_back(category.key());
+        }
+
+        std::vector<const char*> sectionItems;
+        for (const auto& sectionName : sectionNames) {
+            sectionItems.push_back(sectionName.c_str());
+        }
+
+        static int selectedSection = 0;
+        if (ImGui::Combo("Select Section", &selectedSection, sectionItems.data(), sectionItems.size())) {
+            // Handle section change if needed
+        }
+
+        std::string selectedCategoryName = sectionNames[selectedSection];
+        nlohmann::json& fields = editableMetadata[selectedCategoryName];
+
+        ImGui::Text("%s", selectedCategoryName.c_str());
+        ImGui::Separator();
+
+        // Deferred removal and rename
+        std::string fieldToRemove = "";
+        std::unordered_map<std::string, std::string> renameMap;
+
+        // Title buffer
+        static std::unordered_map<std::string, std::string> keyEditBuffers;
+
+        // --- IMMEDIATE NEW FIELD INSERTION ---
+        if (addNewFieldRequested) {
+            int suffix = 1;
+            std::string baseName = "New Field";
+            std::string newFieldName = baseName;
+
+            while (fields.contains(newFieldName)) {
+                newFieldName = baseName + " " + std::to_string(suffix++);
+            }
+
+            fields[newFieldName] = {
+                {"inputType", "text"},
+                {"preset", ""},
+                {"response", ""}
+            };
+
+            keyEditBuffers[newFieldName] = newFieldName;
+            addNewFieldRequested = false;
+        }
+
+        // --- MAIN FIELD LOOP ---
+        for (auto& item : fields.items()) {
+            std::string key = item.key();
+            nlohmann::json& field = item.value();
+            std::string uniqueKey = key + "##" + std::to_string(reinterpret_cast<uintptr_t>(&field));
+
+            // Init buffer
+            if (keyEditBuffers.find(key) == keyEditBuffers.end()) {
+                keyEditBuffers[key] = key;
+            }
+
+            // Editable field title
+            char titleBuffer[256];
+            strncpy(titleBuffer, keyEditBuffers[key].c_str(), sizeof(titleBuffer));
+            titleBuffer[sizeof(titleBuffer) - 1] = '\0';
+
+            if (ImGui::InputText(("Field Title##" + uniqueKey).c_str(), titleBuffer, sizeof(titleBuffer))) {
+                keyEditBuffers[key] = std::string(titleBuffer);
+            }
+
+            // Queue for rename
+            if (keyEditBuffers[key] != key && !keyEditBuffers[key].empty()) {
+                renameMap[key] = keyEditBuffers[key];
+            }
+
+            // Input Type
+            const char* inputTypes[] = { "Text", "Time", "Dropdown" };
+            int inputTypeIndex = 0;
+            if (field["inputType"] == "time") inputTypeIndex = 1;
+            else if (field["inputType"] == "dropdown") inputTypeIndex = 2;
+
+            if (ImGui::Combo(("Input Type##" + uniqueKey).c_str(), &inputTypeIndex, inputTypes, IM_ARRAYSIZE(inputTypes))) {
+                if (inputTypeIndex == 0) {
+                    field["inputType"] = "text";
+                    field["preset"] = "";
+                    field["response"] = "";
+                }
+                else if (inputTypeIndex == 1) {
+                    field["inputType"] = "time";
+                    field["preset"] = "";
+                    field["response"] = "";
+                }
+                else if (inputTypeIndex == 2) {
+                    field["inputType"] = "dropdown";
+                    field["preset"] = { "" };
+                    field["response"] = 0;
+                }
+            }
+
+            // Text response
+            if (field["inputType"] == "text") {
+                char buffer[256];
+                strcpy(buffer, field["response"].get<std::string>().c_str());
+                if (ImGui::InputText(("Response##" + uniqueKey).c_str(), buffer, sizeof(buffer))) {
+                    field["response"] = std::string(buffer);
+                }
+            }
+
+            // Dropdown response
+            if (field["inputType"] == "dropdown") {
+                ImGui::Text("Preset Options");
+                for (size_t i = 0; i < field["preset"].size(); ++i) {
+                    std::string preset = field["preset"][i];
+                    char buffer[256];
+                    strcpy(buffer, preset.c_str());
+
+                    if (ImGui::InputText(("Preset " + std::to_string(i + 1) + "##" + uniqueKey).c_str(), buffer, sizeof(buffer))) {
+                        field["preset"][i] = std::string(buffer);
+                    }
+
+                    if (i == field["preset"].size() - 1) {
+                        if (ImGui::Button(("Remove Preset##" + uniqueKey).c_str())) {
+                            field["preset"].erase(i);
+                        }
+                    }
+                }
+
+                if (ImGui::Button(("Add Preset##" + uniqueKey).c_str())) {
+                    field["preset"].push_back("");
+                }
+
+                int response = field["response"].get<int>();
+                field["response"] = response;
+            }
+
+            if (field["inputType"] != "dropdown") {
+                ImGui::Text("Response field not editable for this type.");
+            }
+
+            if (ImGui::Button(("Remove Field##" + uniqueKey).c_str())) {
+                fieldToRemove = key;
+            }
+
+            ImGui::Separator();
+        }
+
+        // --- APPLY REMOVAL ---
+        if (!fieldToRemove.empty()) {
+            fields.erase(fieldToRemove);
+        }
+
+        ImGui::NewLine();
+
+        // --- ADD FIELD BUTTON ---
+        if (ImGui::Button("Add New Field")) {
+            addNewFieldRequested = true;
+        }
+
+        // --- SAVE CHANGES ---
+        if (ImGui::Button("Save")) {
+            // Apply renames
+            for (const auto& [oldKey, newKey] : renameMap) {
+                if (oldKey != newKey && !newKey.empty() && fields.contains(oldKey)) {
+                    fields[newKey] = fields[oldKey];
+                    fields.erase(oldKey);
+                    keyEditBuffers[newKey] = keyEditBuffers[oldKey];
+                    keyEditBuffers.erase(oldKey);
+                }
+            }
+
+            renameMap.clear();
+            openPopup = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+
+
 
 
 void MyApp::RenderCreateSurveysPage() {
@@ -334,6 +506,7 @@ void MyApp::RenderCreateSurveysPage() {
         editableData.clear();
         needsReload = true;
     }
+
     ImGui::SameLine();
     ImGui::NewLine();
     ImGui::NewLine();
@@ -364,7 +537,7 @@ void MyApp::RenderCreateSurveysPage() {
         needsReload = false;
     }
 
-    auto nestedChildHeight = childHeight- 100.0f;
+    auto nestedChildHeight = childHeight- 140.0f;
 
     ImGui::BeginChild("Survey Editor", ImVec2(availableWidth * 0.7f, nestedChildHeight), true);
     RenderSurveyData(editableData, needsSave);
@@ -376,10 +549,28 @@ void MyApp::RenderCreateSurveysPage() {
     ImGui::EndChild();
 
     // Save and Back buttons
-    ImGui::BeginChild("SaveAndBack", ImVec2(availableWidth, 100.0f), false);
+    ImGui::BeginChild("SaveAndBack", ImVec2(availableWidth, 110.0f), false);
+    ImGui::Separator();
+
+    // Button to edit the metadata
+    static bool openMetadataPopup = false;
+    static nlohmann::json editableMetadata;
+    static std::string currentFilePath;
+
     ImGui::NewLine();
-    ImGui::Separator();
-    ImGui::Separator();
+
+    if (ImGui::Button("Edit Metadata")) {
+        std::string metadataPath = baseDirectory + "metadata_template.json";
+        std::ifstream metadataFile(metadataPath);
+        if (metadataFile.is_open()) {
+            if (editableMetadata.empty()) metadataFile >> editableMetadata;
+            metadataFile.close();
+            currentFilePath = metadataPath;
+            openMetadataPopup = true;
+        }
+    }
+    RenderMetadataPopup(openMetadataPopup, editableMetadata, currentFilePath);
+
     ImGui::Text("Enter Test Program Name:");
     ImGui::InputText("Test Program Name", testProgramName, IM_ARRAYSIZE(testProgramName));
 
@@ -417,9 +608,42 @@ void MyApp::RenderCreateSurveysPage() {
                 }
 
                 // Save survey data to JSON for each MOPS
-                SaveSurveyToJSON(mops, questionList, responseTypeList, testEventDirectory);
+                SaveSurveyToJSON(mops, questionList, responseTypeList, testEventDirectory, editableMetadata, testEvent);
             }
         }
+
+        // --- Save metadataquestions.json ---
+        std::string metadataOutputPath = fullDirectory + "metadataquestions.json";
+        std::ofstream metadataOut(metadataOutputPath);
+        if (metadataOut.is_open()) {
+            metadataOut << editableMetadata.dump(4); // Pretty print
+            metadataOut.close();
+        }
+        else {
+            std::cerr << "Failed to save metadataquestions.json\n";
+            ImGui::OpenPopup("File Save Error");
+        }
+
+        // --- Save responsetypes.json ---
+        std::string responseTypesOutputPath = fullDirectory + "responsetypes.json";
+        nlohmann::json rtJson;
+        for (const auto& rt : responseTypes) {
+            nlohmann::json entry;
+            entry["id"] = rt.id;
+            entry["count"] = rt.count;
+            entry["labels"] = rt.labels;
+            rtJson["responseTypes"].push_back(entry);
+        }
+        std::ofstream rtOut(responseTypesOutputPath);
+        if (rtOut.is_open()) {
+            rtOut << rtJson.dump(4); // Pretty print
+            rtOut.close();
+        }
+        else {
+            std::cerr << "Failed to save responsetypes.json\n";
+            ImGui::OpenPopup("File Save Error");
+        }
+
 
         // Confirm save status
         needsSave = false;

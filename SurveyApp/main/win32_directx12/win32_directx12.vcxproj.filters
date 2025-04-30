@@ -60,9 +60,6 @@
     <ClCompile Include="..\..\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\imgui_demo.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
@@ -104,6 +101,9 @@
     </ClCompile>
     <ClCompile Include="implot_items.cpp">
       <Filter>implot</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
