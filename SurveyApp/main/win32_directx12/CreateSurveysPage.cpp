@@ -444,9 +444,15 @@ void RenderMetadataPopup(bool& openPopup, nlohmann::json& editableMetadata, cons
                 ImGui::Text("Response field not editable for this type.");
             }
 
-            if (ImGui::Button(("Remove Field##" + uniqueKey).c_str())) {
-                fieldToRemove = key;
+            if (key != "User ID") { // Prevent removal of "User ID"
+                if (ImGui::Button(("Remove Field##" + uniqueKey).c_str())) {
+                    fieldToRemove = key;
+                }
             }
+            else {
+                ImGui::TextDisabled("Cannot remove 'User ID'");
+            }
+
 
             ImGui::Separator();
         }

@@ -1,18 +1,17 @@
 {
     "aircrew": {
-        "Dropdown": {
-            "inputType": "dropdown",
-            "preset": [
-                "option1",
-                "option2",
-                "option3"
-            ],
-            "response": 0
-        },
-        "UserID": {
+        "User ID": {
             "inputType": "text",
             "preset": "",
             "response": ""
+        },
+        "Weather": {
+            "inputType": "dropdown",
+            "preset": [
+                "dry",
+                "wet"
+            ],
+            "response": 0
         }
     },
     "maintenance": {

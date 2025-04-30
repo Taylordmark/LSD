@@ -499,15 +499,26 @@ void MyApp::RenderAnalyzeSurveysPage() {
     //////////////////////////////////////
     // Variable Definitions
     //////////////////////////////////////
-
-    // initialize variable to ask for a full page refresh
-    static bool pageRefresh = false;
+       
+    static bool pageRefresh = false; // initialize variable to ask for a full page refresh
+    static nlohmann::json metadataFilters; // Initialize metadata filters        
+    static map<string, map<string, map<string, int>>> programMap; // List of all COIs, MOEs, DSPs that exist in the selected test program
+    static map<string, map<string, map<string, int>>> responsesMap; // List of all COIs, MOEs, DSPs that exist in the selected test program responses
+    static vector<string> allTestEvents; // List of test event folder names that appear in selected test program
+    static vector<string> respondedEvents; // List of test event folder names that have responses in selected test program        
+    static map<int, int> testProgramSurveyCounts; // Set up aggregate COI program variables for plot
+    static map<int, int> testProgramResponseCounts; // Set up aggregate COI response variables for plot
+    static map<string, int> filteredSurveyCounts; // Values for program counts after filtering
+    static map<string, int> filteredResponseCounts; // Values for response counts after filtering
+    static bool filterComplete = false; // Bool to track if values are filtered
+    static bool displayError = false; // To store the error message state
+    static bool showMatchingResponses = false; // To manage the matching responses window state
+    static bool showSurveyDetailsWindow = false; // To track the survey response details window status
+    static std::string selectedResponseFilename; // To store the currently selected response filename
+    static bool openPlotWindow = false; // To display plots of actual responses
 
     // Make buttons look cute
     ImGui::GetStyle().FrameRounding = 5.0f;
-
-    // Initialize metadata filters
-    static nlohmann::json metadataFilters;
 
     // Initialize ImPlot
     ImPlot::CreateContext();
@@ -520,33 +531,6 @@ void MyApp::RenderAnalyzeSurveysPage() {
         testPrograms = GetSurveyFolders(testProgramsPath);
         testPrograms.insert(testPrograms.begin(), "No Selection");
     }
-
-    // List of all COIs, MOEs, DSPs that exist in the selected test program
-    static map<string, map<string, map<string, int>>> programMap;
-    // List of all COIs, MOEs, DSPs that exist in the selected test program responses
-    static map<string, map<string, map<string, int>>> responsesMap;
-    // List of test event folder names that appear in selected test program
-    static vector<string> allTestEvents;
-    // List of test event folder names that have responses in selected test program
-    static vector<string> respondedEvents;
-
-    // Set up aggregate COI variables for plot
-    static map<int, int> testProgramSurveyCounts;
-    static map<int, int> testProgramResponseCounts;
-
-    // Values for counts after filtering
-    static map<string, int> filteredSurveyCounts;
-    static map<string, int> filteredResponseCounts;
-
-    // Bool to track if values are filtered
-    static bool filterComplete = false;
-
-    static bool displayError = false; // To store the error message state
-    static bool showMatchingResponses = false; // To manage the matching responses window state
-    static bool showSurveyDetailsWindow = false; // To track the survey response details window status
-    static std::string selectedResponseFilename; // To store the currently selected response filename
-    static bool openPlotWindow = false; // To display plots of actual responses
-    
 
     //////////////////////////////////////
     // Primary GUI code
@@ -1331,10 +1315,6 @@ void MyApp::RenderAnalyzeSurveysPage() {
         ImGui::End();
         ImGui::End();
     }
-
-    
-
-
     
     //////////////////////////////////////
     // Applying Filters
@@ -1483,9 +1463,12 @@ void MyApp::RenderAnalyzeSurveysPage() {
                             // Parse the JSON data from the file
                             nlohmann::json currentMeta;
                             file >> currentMeta;
+                            currentMeta = currentMeta["metadata"];
 
                             // Iterate through the activeFilterIDs to check that currentMeta values match metadataFilters values
                             for (auto& id : activeFilterIDs) {
+                                
+                                cout << currentMeta["User ID"].dump() << std::endl;
 
                                 // If dropdown, check for exact match of response
                                 if (metadataFilters[id]["inputType"] == "dropdown") {
@@ -1542,25 +1525,10 @@ void MyApp::RenderAnalyzeSurveysPage() {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    //////////////////////////////////////
+    // Displaying Matching Responses, Individual Surveys
+    ////////////////////////////////////// 
+ 
     // Display Matching Responses Window
     if (showMatchingResponses) {
         ImGui::Begin("Matching Survey Responses", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse);
@@ -1670,49 +1638,13 @@ void MyApp::RenderAnalyzeSurveysPage() {
         else {
             ImGui::Text("Failed to open survey file: %s", selectedResponseFilename.c_str());
         }
-    }
+    }    
 
-
-
-    
-    
-    
-    
-    
-    
-
-
-
-
-
-
-
-
-
-
-    
-
-
-    
-
-
-    
-
-    
-
-    
-
-    
-
-    // Now make a series of plots that can be navigated between using previous and next buttons
-    // One plot per MOP, grouped by COI, MOE
-
-    // lets start with just plotting if COI and MOE are already selected.
-    // get data for all files that match the coi and moe
+    //////////////////////////////////////
+    // Plots
+    //////////////////////////////////////
 
     static std::map<std::string, QuestionData> plotData;
-
-    // static bool plotGenerated = false;
 
     if (selectedMOE > 0 && !filterComplete) {
         plotData = ProcessResponseData(testResponsesPath, respondedEvents, responseTypes, selectedCOI, selectedMOE);

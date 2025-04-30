@@ -26,7 +26,7 @@ using std::cout;
 
 // Static variable definitions
 static string baseDirectory = "C:/LSD/AppFiles/TestPrograms/";
-static string responseDirectory = "C:/LSD/AppFiles/responses/";
+static string responseDirectory = "C:/LSD/AppFiles/Responses/";
 
 struct ResponseTypeC {
     string id;
@@ -217,7 +217,7 @@ void RenderTestEventsTable(const std::vector<std::string>& testEventFolders, cha
                 if (lastSelectedTestEvent != selectedTestEvent) MOPS.clear();
                 lastSelectedTestEvent = selectedTestEvent;  // Remember which button was clicked
             }
-            else (refreshData = true);
+            else refreshData = true;
 
             if (isSelected) {
                 ImGui::PopStyleColor(); // Restore the button style
@@ -476,7 +476,7 @@ void RenderSurveys() {
 }
 
 // Save surveys function
-int saveSurvey(const std::string& MOP, const nlohmann::json& surveyJson) {
+int saveSurvey(const std::string& MOP, const nlohmann::json& surveyJson, bool& showUserIDWarning) {
     try {
 
         // Check if the surveyJson is a valid JSON object
@@ -492,8 +492,10 @@ int saveSurvey(const std::string& MOP, const nlohmann::json& surveyJson) {
         std::string userID = metadata["User ID"]["response"];
         if (userID.empty()) {
             std::cerr << "Error: User ID is empty." << std::endl;
+            showUserIDWarning = true;
             return 0;  // Return 0 if userID is empty
         }
+        else showUserIDWarning = false;
 
         // Construct the directory and file name
         std::string directory = responseDirectory + selectedTestProgram + "/" + selectedTestEvent + "/";
@@ -563,7 +565,7 @@ void MyApp::RenderCompleteSurveysPage() {
 
     ImGui::GetStyle().FrameRounding = 5.0f;
 
-    char eventFilter[10] = "";
+    static char eventFilter[10] = "";
     ImGui::Text("Event Filter");
     ImGui::SameLine();
     if (ImGui::InputText("##Test Event Filter", eventFilter, sizeof(eventFilter))) {  }
@@ -601,6 +603,8 @@ void MyApp::RenderCompleteSurveysPage() {
     }
 
     ImGui::EndChild();
+
+    static bool showUserIDWarning = false;
 
     // Submit Surveys Button
     if (ImGui::Button("Submit Surveys")) {
@@ -645,7 +649,7 @@ void MyApp::RenderCompleteSurveysPage() {
                 MOPValues["comment"] = comments[MOPID];
 
                 // Save survey and check if it was successful
-                if (saveSurvey(MOPID, MOPValues) == 0) {
+                if (saveSurvey(MOPID, MOPValues, showUserIDWarning) == 0) {
                     allSurveysSavedSuccessfully = false; // If any survey fails to save, set flag to false
                 }
             }
@@ -656,10 +660,14 @@ void MyApp::RenderCompleteSurveysPage() {
                 RefreshData();
             }
             else {
-                std::cerr << "Error: One or more surveys could not be saved." << std::endl;
+                std::cerr << "Error: One or more surveys could not be saved." << std::endl;                
             }
         }
 
+    }
+
+    if (showUserIDWarning) {
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Please enter User ID before submitting");
     }
 
     ImGui::EndChild();
