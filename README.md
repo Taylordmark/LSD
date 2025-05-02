@@ -77,8 +77,11 @@ Updated version of app is available as an .exe file after running at ""C:\LSD\Su
 
 ## To Do:
 ### Primary
-  - Fix filtering to properly display survey matches
+  - Fix plots to display again
+  - Check that time filters work properly for min / max values
+  - Add filters for date
   - Add error handling for when MOE not selected but plots displayed
+  - Add a csv export option that combines all data for all filtered responses with metadata, response value, response value as text, etc.
   - Add sentiment analysis of surveys using hugging face pretrained model to **Analyze Surveys**
   - Add data connection to Envision to get flight data for **Complete Surveys** page
   - Add ability to take in quantitative data in addition to typical survey results
