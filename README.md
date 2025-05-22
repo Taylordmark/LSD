@@ -80,16 +80,19 @@ Updated version of app is available as an .exe file after running at ""C:\LSD\Su
   - Fix plots to display again
   - Check that time filters work properly for min / max values
   - Add filters for date
-  - Add error handling for when MOE not selected but plots displayed
+  - Add error handling for when MOE not selected but plots displayed (or just plots labelled with COI, MOE, etc if not selected)
   - Add a csv export option that combines all data for all filtered responses with metadata, response value, response value as text, etc.
   - Add sentiment analysis of surveys using hugging face pretrained model to **Analyze Surveys**
   - Add data connection to Envision to get flight data for **Complete Surveys** page
   - Add ability to take in quantitative data in addition to typical survey results
    - This can be doene using a "fill in the blank" option in the responseTypes.json / dropdown options
+   - Make a "CSV compiler" that takes in all data from various csv exports and compiles them into a single csv for Qlik analysis - primary feature here is avoiding duplicates which should be pretty easy given the naming convention
 ### Secondary
   - Make app look nicer with better fonts, color themes
   - Add an "Export to CSV" button in the **Analyze Surveys** page that outputs all data in a similar format to the input csv in addition to responses
   - Add all factors and levels to **Create Surveys** page - from .csv file upload
     - .csv file should have all of this data and when file is uploaded, fill test program with Factors and Levels for filtering in analysis page
+  - With plot summaries, show which test events have been completed and which have not, ex test event 1 is at 2/4 complete
+  - Add tracker for if responses have been QC'd for data type, validity, if comments match responses, etc
   
   
