@@ -81,6 +81,7 @@ Updated version of app is available as an .exe file after running at ""C:\LSD\Su
   - Check that time filters work properly for min / max values
   - Add filters for date
   - Add error handling for when MOE not selected but plots displayed (or just plots labelled with COI, MOE, etc if not selected)
+  - Add a csv export option that combines all data for all filtered responses with metadata, response value, response value as text, etc.
   - Add sentiment analysis of surveys using hugging face pretrained model to **Analyze Surveys**
   - Add data connection to Envision to get flight data for **Complete Surveys** page
   - Add ability to take in quantitative data in addition to typical survey results
@@ -90,6 +91,7 @@ Updated version of app is available as an .exe file after running at ""C:\LSD\Su
        - Response files will probably not be divided by MOP anymore
    - Make response csv save responses as text rather than index number
    - Formulas for Mx data in **Analyze Surveys**
+
 ### Secondary
   - Make app look nicer with better fonts, color themes
   - Add an "Export to CSV" button in the **Analyze Surveys** page that outputs all data in a similar format to the input csv in addition to responses
