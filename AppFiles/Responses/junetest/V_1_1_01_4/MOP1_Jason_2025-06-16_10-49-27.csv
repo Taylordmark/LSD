@@ -1,0 +1,6 @@
+"Cockpit Position","Fault Code","Land Time","Location","Takeoff Time","Time of Day","Uniform","User ID","Weather","Question","Response Type","Response","Comment"
+"0","0","1100","Edwards","1059","0","0","Jason","0",""How well did T7 system 1 perform during maneuver A?"",""Likert 5 Point Acceptability NA"","0","This is a comment"
+"0","0","1100","Edwards","1059","0","0","Jason","0",""How well did T7 system 1 perform during maneuver A?"",""Y/N"","0","This is a comment"
+"0","0","1100","Edwards","1059","0","0","Jason","0",""How well did T7 system 1 perform during maneuver A?"",""String"","this is a string answer","This is a comment"
+"0","0","1100","Edwards","1059","0","0","Jason","0",""How well did T7 system 1 perform during maneuver A?"",""Likert 5 Point Satisfactory"","0","This is a comment"
+"0","0","1100","Edwards","1059","0","0","Jason","0",""How well did T7 system 1 perform during maneuver A?"",""Likert 5 Point Satisfactory NA"","0","This is a comment"

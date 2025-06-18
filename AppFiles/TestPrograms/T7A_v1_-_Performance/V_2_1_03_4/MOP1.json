@@ -1,0 +1,126 @@
+{
+    "metadata": {
+        "Cockpit Position": {
+            "inputType": "dropdown",
+            "preset": [
+                "Front",
+                "Back"
+            ],
+            "response": 0
+        },
+        "Fault Code": {
+            "inputType": "dropdown",
+            "preset": [
+                "NA",
+                "1",
+                "2",
+                "3"
+            ],
+            "response": 0
+        },
+        "Land Time": {
+            "inputType": "time",
+            "preset": "",
+            "response": ""
+        },
+        "Location": {
+            "inputType": "text",
+            "preset": "",
+            "response": ""
+        },
+        "Takeoff Time": {
+            "inputType": "time",
+            "preset": "",
+            "response": ""
+        },
+        "Time of Day": {
+            "inputType": "dropdown",
+            "preset": [
+                "Day",
+                "Night",
+                "Twilight"
+            ],
+            "response": 0
+        },
+        "Uniform": {
+            "inputType": "dropdown",
+            "preset": [
+                "Normal",
+                "Cold"
+            ],
+            "response": 0
+        },
+        "User ID": {
+            "inputType": "text",
+            "preset": "",
+            "response": ""
+        },
+        "Weather": {
+            "inputType": "dropdown",
+            "preset": [
+                "Clear",
+                "Overcast",
+                "Rain",
+                "Snow"
+            ],
+            "response": 0
+        }
+    },
+    "questions": [
+        "Overall system performance during the assigned mission",
+        "If used, performance of simulated sensor capabilities",
+        "If used, performance of simulated weapons employment",
+        "If used, realism of embedded training live, virtual, and constructive simulations (Consider constructive entity behavior vs expectations, useful entity reactions, representative appearances of constructive/virtual entities (when applicable), and overall simulation realism)",
+        "If used, integration of embedded training live, virtual, and constructive simulations (Consider embedded training system performance, display smoothness/fidelity/level of detail, and the instructor interface for managing/executing scenarios)",
+        "Were there any instances of the aircraft negatively impacting or preventing the accomplishment of the administrative phases of flight? Y/N (Consider handling qualitis, energy management, and situational awareness)",
+        "If so, why:",
+        "Did the aircrew flight equipment negatively impact performance of any portion of this mission? Y/N",
+        "If so, why:",
+        "At any point in this mission, was your aircraft not compliant with airspace and equipment mandates? Y/N",
+        "If so, why:",
+        "Item",
+        "Planned?",
+        "Unplanned Reason",
+        "Successful?",
+        "Unsuccessful Reason",
+        "Aircrew Assesment"
+    ],
+    "responseTypes": [
+        "Likert 5 Point Satisfactory",
+        "Likert 5 Point Satisfactory NA",
+        "Likert 5 Point Satisfactory NA",
+        "Likert 5 Point Satisfactory NA",
+        "Likert 5 Point Satisfactory NA",
+        "Y/N",
+        "String",
+        "Y/N",
+        "String",
+        "Y/N",
+        "String",
+        "String",
+        "Y/N",
+        "String",
+        "Y/N",
+        "Training Objective Completion Survey",
+        "Training Objective Completion Survey"
+    ],
+    "responses": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        "",
+        null,
+        "",
+        null,
+        "",
+        "",
+        null,
+        "",
+        null,
+        null,
+        null
+    ]
+}

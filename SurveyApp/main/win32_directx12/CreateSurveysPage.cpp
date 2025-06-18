@@ -24,7 +24,7 @@ bool openFile()
 {
     //  CREATE FILE OBJECT INSTANCE
     HRESULT f_SysHr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    if (FAILED(f_SysHr))
+    if (FAILED(f_SysHr)) 
         return FALSE;
 
     // CREATE FileOpenDialog OBJECT
@@ -133,16 +133,36 @@ void LoadDataFromFile(const std::string& filename, std::vector<std::vector<std::
         }
 
         std::vector<std::string> row;
-        std::stringstream ss(line);
         std::string cell;
-        while (std::getline(ss, cell, ',')) {
-            row.push_back(cell);
+        bool inQuotes = false;
+
+        for (size_t i = 0; i < line.size(); ++i) { // Allows for commas to be in the questions themselves, rather than parsing by each comma in the CSV
+            char c = line[i];
+
+            if (c == '"') {
+                if (inQuotes && i + 1 < line.size() && line[i + 1] == '"') {
+                    cell += '"';
+                    ++i; // skip the escaped quote
+                }
+                else {
+                    inQuotes = !inQuotes;
+                }
+            }
+            else if (c == ',' && !inQuotes) {
+                row.push_back(cell);
+                cell.clear();
+            }
+            else {
+                cell += c;
+            }
         }
+        row.push_back(cell);  
         data.push_back(row);
     }
 
     file.close();
 }
+
 
 // Saves all survey data to individual json files
 void SaveSurveyToJSON(
@@ -163,14 +183,26 @@ void SaveSurveyToJSON(
     jsonData["questions"] = questions;
     jsonData["responseTypes"] = rTs;
 
-    // Initialize responses to null
+    // Initialize responses based on response type - This allows both multiple choice and "fill in the blank" type responses
     nlohmann::json responses = nlohmann::json::array();
     for (size_t i = 0; i < questions.size(); ++i) {
-        responses.push_back(nullptr);
+        // Check if this is a string response type
+        if (rTs[i] == "String") {
+            responses.push_back("");  // Initialize string responses to empty string
+        }
+        else {
+            responses.push_back(nullptr);  // Keep null for other types
+        }
     }
 
     jsonData["responses"] = responses;
-    jsonData["metadata"] = editableMetadata["aircrew"];
+    if (editableMetadata.contains("aircrew")) {
+        jsonData["metadata"] = editableMetadata["aircrew"];
+    }
+    else {
+        std::cerr << "Missing 'aircrew' metadata!" << std::endl;
+        jsonData["metadata"] = {};  // fallback
+    };
     
     // Save the file
     std::ofstream jsonFile(fullFilePath);

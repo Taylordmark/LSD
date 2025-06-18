@@ -20,6 +20,7 @@ namespace MyApp {
         if (io.Fonts->AddFontFromFileTTF(fontPath, 16.0f) == nullptr) {
             std::cerr << "Failed to load font: " << fontPath << std::endl;
         }
+
         // set this as the default font
         io.FontDefault = io.Fonts->Fonts.back();  // This is the last added font
     }

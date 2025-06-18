@@ -420,7 +420,6 @@ void RenderSurveys() {
 
                         // Loop through all radio buttons
                         for (int b = 0; b < count; ++b) {
-
                             // Create a unique ID for each radio button
                             std::string radioButtonID = "##" + MOPID + "Q_" + std::to_string(q) + "B_" + std::to_string(b);
 
@@ -445,7 +444,64 @@ void RenderSurveys() {
                                 ImGui::Text(labels[labelIndex].c_str());
                             }
                         }
+                    }
+                    else {
+                        // Handle text input and other non-radio button response types
+                        if (responseType == "String") {
+                            // Create a text input for string responses
+                            std::string textInputID = "##" + MOPID + "Q_" + std::to_string(q) + "_TextInput";
 
+                            // Get current text value from response (if it exists and is a string)
+                            std::string currentText = "";
+                            if (selectedResponse.is_string()) {
+                                currentText = selectedResponse.get<std::string>();
+                            }
+                            else if (!selectedResponse.is_null()) {
+                                // Display error message for incorrect data type
+                                ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Error: Expected string value but found %s",
+                                    selectedResponse.type_name());
+                                std::cerr << "Data type error for " << MOPID << " Q" << q << ": Expected string but found "
+                                    << selectedResponse.type_name() << std::endl;
+                            }
+
+                            // Create buffer for ImGui text input
+                            char textBuffer[1024];
+                            strncpy_s(textBuffer, sizeof(textBuffer), currentText.c_str(), _TRUNCATE);
+
+                            // Display the text input
+                            ImGui::PushItemWidth(400); // Set width for text input
+                            if (ImGui::InputText(textInputID.c_str(), textBuffer, sizeof(textBuffer))) {
+                                // Update the response when text changes
+                                MOPS[MOPID]["responses"][q] = std::string(textBuffer);
+                            }
+                            ImGui::PopItemWidth();
+                        }
+                        else if (responseType.find("Floating Point") != std::string::npos) {
+                            // Handle floating point inputs (numerical)
+                            std::string floatInputID = "##" + MOPID + "Q_" + std::to_string(q) + "_FloatInput";
+
+                            // Get current float value from response
+                            float currentFloat = 0.0f;
+                            if (selectedResponse.is_number()) {
+                                currentFloat = selectedResponse.get<float>();
+                            }
+                            else if (!selectedResponse.is_null()) {
+                                // Display error message for incorrect data type
+                                ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Error: Expected numeric value but found %s",
+                                    selectedResponse.type_name());
+                                std::cerr << "Data type error for " << MOPID << " Q" << q << ": Expected number but found "
+                                    << selectedResponse.type_name() << std::endl;
+                            }
+
+                            // Display the float input
+                            ImGui::PushItemWidth(200);
+                            if (ImGui::InputFloat(floatInputID.c_str(), &currentFloat)) {
+                                // Update the response when value changes
+                                MOPS[MOPID]["responses"][q] = currentFloat;
+                            }
+                            ImGui::PopItemWidth();
+                        }
+                        // This is where we add more else conditions if we end up finding more input types that need to be added
                     }
                 }
             }
@@ -532,6 +588,97 @@ int saveSurvey(const std::string& MOP, const nlohmann::json& surveyJson, bool& s
 }
 
 
+// Check for duplicates
+    // The purpose of this function is to ensure that we do not have duplicate survey response files when we decide to build the .csv files
+
+// Write csv function - turns the JSONs into CSVs and saves a copy in the same place
+int WriteCSV(const std::string& MOP, const nlohmann::json& surveyJson) {
+    try {
+        if (!surveyJson.is_object()) return 0; // Ensures data is of the right type
+
+        // Pull relevant metadata to be put as the column entries
+        std::vector<std::string> metadataKeys;
+        std::vector<std::string> metadataValues;
+        for (const auto& [key, value] : surveyJson["metadata"].items()) {
+            metadataKeys.push_back(key);
+            metadataValues.push_back(value["response"].is_string()
+                ? value["response"].get<std::string>()
+                : std::to_string(value["response"].get<int>()));
+        }
+
+        // Same thing but for the survey data (questions, response type and answers) when surveys are completed
+        std::ostringstream oss;
+        for (const auto& key : metadataKeys) oss << '"' << key << '"' << ",";
+        oss << "\"Question\",\"Response Type\",\"Response\",\"Comment\"\n"; // Fills the column names
+
+        std::string fileComment = surveyJson.contains("comment") ? surveyJson["comment"].get<std::string>() : ""; // Grabs the comment separately since it has its own key
+
+        for (size_t i = 0; i < surveyJson["questions"].size(); ++i) { // Fills in columns with data
+            for (const auto& val : metadataValues) oss << '"' << val << '"' << ",";
+            oss << '"' << surveyJson["questions"][i] << '"' << ",";
+            oss << '"' << surveyJson["responseTypes"][i] << '"' << ",";
+
+            // Turns the survey responses into string to avoid running into errors
+            std::string responseStr;
+            try {
+                auto& resp = surveyJson["responses"][i];
+                if (resp.is_string()) {
+                    responseStr = resp.get<std::string>();
+                }
+                else if (resp.is_number_integer()) {
+                    responseStr = std::to_string(resp.get<int>());
+                }
+                else if (resp.is_number_float()) {
+                    responseStr = std::to_string(resp.get<double>());
+                }
+                else {
+                    responseStr = "";
+                }
+            }
+            catch (const std::exception& ex) {
+                responseStr = "";
+            }
+
+            oss << '"' << responseStr << '"' << ","; // Adds the responses to the CSV
+            oss << '"' << fileComment << '"' << "\n"; // Adds comment in the loop to ensure dimensionality is kept
+
+        }
+
+        // Pulls UserID
+        std::string userID = surveyJson["metadata"]["User ID"]["response"];
+        if (userID.empty()) {
+            return 0;
+        }
+
+        // Pulls necessary file path to save survey csv
+        std::string directory = responseDirectory + selectedTestProgram + "/" + selectedTestEvent + "/";
+        std::string fileName = MOP + "_" + userID + "_" + currentDateTime + ".csv";
+        std::string fullPath = directory + fileName;
+
+        // Creates directory if it does not already exist (this should never be called but just incase)
+        if (!std::filesystem::exists(directory)) {
+            std::filesystem::create_directories(directory);
+        }
+
+        // Puts the file into the correct path
+        std::ofstream outFile(fullPath);
+        if (!outFile.is_open()) {
+            return 0;
+        }
+
+        outFile << oss.str();
+        outFile.close();
+
+        return 1;
+    }
+    catch (const std::exception& e) {
+        return 0;
+    }
+}
+
+
+
+
 
 // Main GUI code
 void MyApp::RenderCompleteSurveysPage() {
@@ -615,14 +762,37 @@ void MyApp::RenderCompleteSurveysPage() {
             // Loop through the responses and check each one
             int index = 0;  // Counter to keep track of the index in the responses array
             for (auto& r : MOPValues["responses"]) {
-                if (!r.is_number_integer()) {  // If the response is not an integer
-                    // Create a message string for unanswered questions
+                bool isAnswered = false;
+
+                // Check for empty responses, this needs to be done for each response type now that we have multiple
+                std::string responseType = "";
+                if (index < MOPValues["responseTypes"].size()) {
+                    responseType = MOPValues["responseTypes"][index].get<std::string>();
+                }
+
+                // Check if response is answered based on its expected type
+                if (responseType == "String") {
+                    // For string responses, check if it's a non-empty string
+                    isAnswered = r.is_string() && !r.get<std::string>().empty();
+                }
+                else if (responseType.find("Floating Point") != std::string::npos) {
+                    // For floating point responses, check if it's a valid number
+                    isAnswered = r.is_number();
+                }
+                else {
+                    // For radio button/multiple choice responses, check if it's a valid integer
+                    isAnswered = r.is_number_integer();
+                }
+
+                // If not answered, add to unanswered questions list
+                if (!isAnswered) {
                     std::string message = "Did you answer " + MOPID + " - Question " + std::to_string(index + 1) + "?";
                     unansweredQuestions.push_back(message);  // Add to unansweredQuestions vector
-                }                
+                }
+
                 ++index;  // Increment the index for the next response
             }
-        }       
+        }
 
         // Check if there are any unanswered questions by checking the vector size
         if (unansweredQuestions.empty()) {
@@ -652,6 +822,12 @@ void MyApp::RenderCompleteSurveysPage() {
                 if (saveSurvey(MOPID, MOPValues, showUserIDWarning) == 0) {
                     allSurveysSavedSuccessfully = false; // If any survey fails to save, set flag to false
                 }
+
+                // Create the .csv
+                if (WriteCSV(MOPID, MOPValues) == 0) {
+                    allSurveysSavedSuccessfully = false; // If any survey fails to save, set flag to false
+                }
+
             }
 
             // Only call RefreshData if all surveys were saved successfully

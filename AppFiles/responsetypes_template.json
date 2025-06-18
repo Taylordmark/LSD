@@ -32,8 +32,18 @@
 		},
 		{
 			"id": "Likert 6 Point Satisfactory",
-			"count": 3,
+			"count": 6,
 			"labels": [ "Very Unsatisfactory", "Unsatisfactory", "Marginally Unsatisfactory", "Marginally Satisfactory", "Satisfactory", "Very Satisfactory" ]
+		},
+		{
+			"id": "Likert 5 Point Satisfactory",
+			"count": 5,
+			"labels": [ "Very Unsatisfactory", "Unsatisfactory", "Neutral", "Satisfactory", "Very Satisfactory" ]
+		},
+		{
+			"id": "Likert 5 Point Satisfactory NA",
+			"count": 6,
+			"labels": [ "NA", "Very Unsatisfactory", "Unsatisfactory", "Neutral", "Satisfactory", "Very Satisfactory" ]
 		},
 		{
 			"id": "Bedford Workload 10 Point Simple",
@@ -43,12 +53,23 @@
 		{
 			"id": "Situational Awareness 5 Point",
 			"count": 10,
-			"labels": [ "Very Good", "Good", "Adequate", "Poor", "Very Poor"]
+			"labels": [ "Very Good", "Good", "Adequate", "Poor", "Very Poor" ]
 		},
 		{
 			"id": "Likert 5 Point Low to High",
 			"count": 5,
 			"labels": [ "Very Low", "Neutral", "Very High" ]
+		},
+		{
+			"id": "Y/N",
+			"count": 2,
+			"labels": [ "No", "Yes" ]
+		},
+		{
+			"id": "String",
+			"count": -1,
+			"labels": [ "Enter text response" ],
+			"notes": "Allows for free-form text input"
 		},
 		{
 			"id": "Floating Point Average Above",

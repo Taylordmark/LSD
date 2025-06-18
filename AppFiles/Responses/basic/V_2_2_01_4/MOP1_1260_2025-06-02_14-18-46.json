@@ -1,0 +1,1 @@
+{"comment":"","metadata":{"User ID":{"inputType":"text","preset":"","response":"1260"},"Weather":{"inputType":"dropdown","preset":["dry","wet"],"response":0}},"questions":["How well did T7 system 1 perform during maneuver A?"],"responseTypes":["Likert 5 Point Acceptability NA"],"responses":[1]}
