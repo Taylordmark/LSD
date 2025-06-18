@@ -102,9 +102,9 @@ Updated version of app is available as an .exe file after running at ""C:\LSD\Su
   - Allow for N/A responses to save as N/A rather than 0
 
 ## Recent Changes and Additions Made (April 2025 - June 2025):
-    - Added function in CompleteSurveys.cpp to create CSV outputs with survey responses in same place as json responses
-    - Added response types, such as string and Likert 5 Point Satisfactory in responsetypes_template.json
-    - Functionality to allow for "fill in the blank" type responses to appear in the surveys
-    - Improved CSV parsing allowing survey questions to contain commas
-    - Standalone CSV compiler written in python. Contact Jason Medeiros (kaulanaopuuokalani@gmail.com) for more information
-    - Python script to populate survey questions. Contact Jason Medeiros for more informaton
+  - Added function in CompleteSurveys.cpp to create CSV outputs with survey responses in same place as json responses
+  -  Added response types, such as string and Likert 5 Point Satisfactory in responsetypes_template.json
+  -  Functionality to allow for "fill in the blank" type responses to appear in the surveys
+  -  Improved CSV parsing allowing survey questions to contain commas
+  -  Standalone CSV compiler written in python. Contact Jason Medeiros (kaulanaopuuokalani@gmail.com) for more information
+  -  Python script to populate survey questions. Contact Jason Medeiros for more informaton
