@@ -1,0 +1,78 @@
+{
+    "metadata": {
+        "Cockpit Position": {
+            "inputType": "dropdown",
+            "preset": [
+                "Front",
+                "Back"
+            ],
+            "response": 0
+        },
+        "Fault Code": {
+            "inputType": "dropdown",
+            "preset": [
+                "NA",
+                "1",
+                "2",
+                "3"
+            ],
+            "response": 0
+        },
+        "Land Time": {
+            "inputType": "time",
+            "preset": "",
+            "response": ""
+        },
+        "Location": {
+            "inputType": "text",
+            "preset": "",
+            "response": ""
+        },
+        "Takeoff Time": {
+            "inputType": "time",
+            "preset": "",
+            "response": ""
+        },
+        "Time of Day": {
+            "inputType": "dropdown",
+            "preset": [
+                "Day",
+                "Night",
+                "Twilight"
+            ],
+            "response": 0
+        },
+        "Uniform": {
+            "inputType": "dropdown",
+            "preset": [
+                "Normal",
+                "Cold"
+            ],
+            "response": 0
+        },
+        "User ID": {
+            "inputType": "text",
+            "preset": "",
+            "response": ""
+        },
+        "Weather": {
+            "inputType": "dropdown",
+            "preset": [
+                "Clear",
+                "Overcast",
+                "Rain",
+                "Snow"
+            ],
+            "response": 0
+        }
+    },
+    "questions": [
+        "How well did T7 system 4 perform during maneuver A?"
+    ],
+    "responseTypes": [
+        "Likert 5 Point Acceptability NA"
+    ],
+    "responses": [
+        null
+    ]
+}

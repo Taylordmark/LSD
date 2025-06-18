@@ -1,0 +1,18 @@
+{
+    "comment": "Very Nice",
+    "metadata": {
+        "User ID": {
+            "inputType": "text",
+            "preset": "",
+            "response": "142322"
+        },
+        "Weather": {
+            "inputType": "dropdown",
+            "preset": [ "dry", "wet" ],
+            "response": 1
+        }
+    },
+    "questions": [ "How well did T7 system 5 perform during maneuver B?" ],
+    "responses": [ 5 ],
+    "responseTypes": [ "Likert 5 Point Acceptability NA" ]
+}

@@ -1,0 +1,185 @@
+{
+    "responseTypes": [
+        {
+            "count": 7,
+            "id": "Likert 7 Point Agreement",
+            "labels": [
+                "Strongly Disagree",
+                "Disagree",
+                "Somewhat Disagree",
+                "Neither Agree Nor Disagree",
+                "Somewhat Agree",
+                "Agree",
+                "Strongly Agree"
+            ]
+        },
+        {
+            "count": 3,
+            "id": "Likert 3 Point Low Med High",
+            "labels": [
+                "Low",
+                "Medium",
+                "High"
+            ]
+        },
+        {
+            "count": 6,
+            "id": "Likert 5 Point Acceptability NA",
+            "labels": [
+                "NA",
+                "Completely Unnacceptable",
+                "Largely Unacceptable",
+                "Somewhat Unacceptable",
+                "Somewhat Acceptable",
+                "Largely Acceptable",
+                "Completely Acceptable"
+            ]
+        },
+        {
+            "count": 5,
+            "id": "Likert 5 Point Agreement",
+            "labels": [
+                "Disagree",
+                "Somewhat Disagree",
+                "Neither Agree Nor Disagree",
+                "Somewhat Agree",
+                "Agree"
+            ]
+        },
+        {
+            "count": 6,
+            "id": "Likert 5 Point Agreement NA",
+            "labels": [
+                "NA",
+                "Disagree",
+                "Somewhat Disagree",
+                "Neither Agree Nor Disagree",
+                "Somewhat Agree",
+                "Agree"
+            ]
+        },
+        {
+            "count": 3,
+            "id": "Likert 3 Point Satisfactory",
+            "labels": [
+                "Unsatisfactory",
+                "Neutral",
+                "Satisfactory"
+            ]
+        },
+        {
+            "count": 6,
+            "id": "Likert 6 Point Satisfactory",
+            "labels": [
+                "Very Unsatisfactory",
+                "Unsatisfactory",
+                "Marginally Unsatisfactory",
+                "Marginally Satisfactory",
+                "Satisfactory",
+                "Very Satisfactory"
+            ]
+        },
+        {
+            "count": 5,
+            "id": "Likert 5 Point Satisfactory",
+            "labels": [
+                "Very Unsatisfactory",
+                "Unsatisfactory",
+                "Neutral",
+                "Satisfactory",
+                "Very Satisfactory"
+            ]
+        },
+        {
+            "count": 6,
+            "id": "Likert 5 Point Satisfactory NA",
+            "labels": [
+                "NA",
+                "Very Unsatisfactory",
+                "Unsatisfactory",
+                "Neutral",
+                "Satisfactory",
+                "Very Satisfactory"
+            ]
+        },
+        {
+            "count": 10,
+            "id": "Bedford Workload 10 Point Simple",
+            "labels": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+            ]
+        },
+        {
+            "count": 10,
+            "id": "Situational Awareness 5 Point",
+            "labels": [
+                "Very Good",
+                "Good",
+                "Adequate",
+                "Poor",
+                "Very Poor"
+            ]
+        },
+        {
+            "count": 5,
+            "id": "Likert 5 Point Low to High",
+            "labels": [
+                "Very Low",
+                "Neutral",
+                "Very High"
+            ]
+        },
+        {
+            "count": 2,
+            "id": "Y/N",
+            "labels": [
+                "No",
+                "Yes"
+            ]
+        },
+        {
+            "count": -1,
+            "id": "String",
+            "labels": [
+                "Enter text response"
+            ]
+        },
+        {
+            "count": -1,
+            "id": "Floating Point Average Above",
+            "labels": [
+                "Enter value"
+            ]
+        },
+        {
+            "count": -1,
+            "id": "Floating Point Average Below",
+            "labels": [
+                "Enter value"
+            ]
+        },
+        {
+            "count": -1,
+            "id": "Floating Point Max",
+            "labels": [
+                "Enter value"
+            ]
+        },
+        {
+            "count": -1,
+            "id": "Floating Point Min",
+            "labels": [
+                "Enter value"
+            ]
+        }
+    ]
+}

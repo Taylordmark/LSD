@@ -1,0 +1,96 @@
+{
+    "metadata": {
+        "Cockpit Position": {
+            "inputType": "dropdown",
+            "preset": [
+                "Front",
+                "Back"
+            ],
+            "response": 0
+        },
+        "Fault Code": {
+            "inputType": "dropdown",
+            "preset": [
+                "NA",
+                "1",
+                "2",
+                "3"
+            ],
+            "response": 0
+        },
+        "Land Time": {
+            "inputType": "time",
+            "preset": "",
+            "response": ""
+        },
+        "Location": {
+            "inputType": "text",
+            "preset": "",
+            "response": ""
+        },
+        "Takeoff Time": {
+            "inputType": "time",
+            "preset": "",
+            "response": ""
+        },
+        "Time of Day": {
+            "inputType": "dropdown",
+            "preset": [
+                "Day",
+                "Night",
+                "Twilight"
+            ],
+            "response": 0
+        },
+        "Uniform": {
+            "inputType": "dropdown",
+            "preset": [
+                "Normal",
+                "Cold"
+            ],
+            "response": 0
+        },
+        "User ID": {
+            "inputType": "text",
+            "preset": "",
+            "response": ""
+        },
+        "Weather": {
+            "inputType": "dropdown",
+            "preset": [
+                "Clear",
+                "Overcast",
+                "Rain",
+                "Snow"
+            ],
+            "response": 0
+        }
+    },
+    "questions": [
+        "Simulator replication of aircraft and surrounding environment",
+        "If used, simulator scenario input capabilities",
+        "If used, simulated aerial refueling capabilities",
+        "If used, simulator data connectivity performance",
+        "If used, realism of embedded training life, virtual, and constructive simulations (Consider entity behavior vs expectations, useful entity reactions, representative appearance (when applicable), and overall realism)",
+        "If used, integration of embedded training live, virtual, and constructive simulations (Consider system performance, display smoothness/fidelity, and the instructor interface for managing/executing scenarios)",
+        "In your own words, describe how well the performance of the GBTS in this mission allows for the transfer of skills to the T-7A (and other) aircraft. (Consider the simulation fidelity and realism, sequence of steps required to complete trainingobjectives, \"sim-isms\", and simulated aircraft, weapon, and sensor performance):"
+    ],
+    "responseTypes": [
+        "Likert 5 Point Satisfactory",
+        "Likert 5 Point Satisfactory NA",
+        "Likert 5 Point Satisfactory NA",
+        "Likert 5 Point Satisfactory NA",
+        "Likert 5 Point Satisfactory NA",
+        "Likert 5 Point Satisfactory NA",
+        "String"
+    ],
+    "responses": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        ""
+    ]
+}
