@@ -1,4 +1,8 @@
-﻿  CreateSurveysPage.cpp
+﻿  CompleteSurveysPage.cpp
+C:\LSD\SurveyApp\main\win32_directx12\CompleteSurveysPage.cpp(514,13): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\LSD\SurveyApp\main\win32_directx12\CompleteSurveysPage.cpp(638,42): warning C4101: 'ex': unreferenced local variable
+C:\LSD\SurveyApp\main\win32_directx12\CompleteSurveysPage.cpp(674,34): warning C4101: 'e': unreferenced local variable
+  CreateSurveysPage.cpp
 C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(174,24): warning C4100: 'testEventName': unreferenced formal parameter
 C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(353,100): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 C:\LSD\SurveyApp\main\win32_directx12\CreateSurveysPage.cpp(442,17): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
@@ -367,8 +371,8 @@ C:\LSD\SurveyApp\json.hpp(22170,24): warning C4459: declaration of 'result' hide
               see the first reference to 'nlohmann::json_abi_v3_11_3::basic_json<std::map,std::vector,std::string,bool,int64_t,uint64_t,double,std::allocator,nlohmann::json_abi_v3_11_3::adl_serializer,std::vector<uint8_t,std::allocator<uint8_t>>,void>::get' in 'LoadResponseTypesFromFile'
   
   Generating code
-  8 of 8135 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  3 of 8135 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    123 functions had inline decision re-evaluated but remain unchanged
+    85 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   win32_directx12.vcxproj -> C:\LSD\SurveyApp\main\win32_directx12\Release\win32_directx12.exe
